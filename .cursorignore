@@ -1,0 +1,22 @@
+# Sensitive data - Block all production/local environment variables
+.env
+.env.local
+.env.production
+.env.development
+*.env
+*.env.*
+
+# Allow ONLY the example environment file for AI context
+!.env.example
+
+# Large dependency and build folders (Token savers)
+node_modules/
+.next/
+dist/
+build/
+out/
+
+# Version control system internals
+.git/
+.github/
+.turbo/

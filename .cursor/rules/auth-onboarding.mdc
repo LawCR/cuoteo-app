@@ -1,0 +1,12 @@
+---
+description: Clerk, perfil Cuoteo y gate de onboarding
+globs: "**/features/profile/**,**/core/auth/**,**/middleware.ts"
+alwaysApply: false
+---
+
+# Auth y onboarding
+
+- Identidad: `clerkUserId` + fila `User` propia. No usar `process.env` suelto.
+- Tras login, **no** entrar a `/dashboard` hasta completar onboarding: **nombre**, **username** (único, case-insensitive), **teléfono PE** (`+51` + 9 dígitos, único).
+- CCI / banco opcionales (onboarding o `/perfil`). Sin CCI no se muestra copiar CCI. Sin QR.
+- En un plan: nombre visible; **email** debajo. UI y toasts en español.

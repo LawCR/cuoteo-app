@@ -1,0 +1,14 @@
+---
+description: Límites del MVP Cuoteo y exclusiones V2
+alwaysApply: true
+---
+
+# MVP
+
+- Web mobile-first y responsive desktop. Sin app nativa ni PWA.
+- Moneda **PEN**. Fechas en **`America/Lima`**.
+- Auth: Clerk hosted (email/password y Google). Email transaccional: **solo Resend**, y solo solicitudes de amistad.
+
+# Fuera del MVP (V2)
+
+No implementar: landing en `/`, QR, comprobantes, confirmación de pago del acreedor, Brevo, push, deep links bancarios, PWA/offline, fusión fantasma↔cuenta, propinas/impuestos, multi-moneda, split desigual.

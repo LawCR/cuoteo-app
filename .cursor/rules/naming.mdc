@@ -1,0 +1,20 @@
+---
+description: Prefijos y nomenclatura de archivos TypeScript/React
+alwaysApply: true
+---
+
+# Nomenclatura de archivos
+
+| Concepto | Prefijo / caso | Archivo | Ejemplo |
+| :--- | :--- | :--- | :--- |
+| Interface / Type | `I` / `T` | `*.interface.ts` | `interface IProduct`, `type TRole` |
+| Enum | `E` | `*.enum.ts` | `enum EProductType` |
+| Zustand store | sin prefijo | `*.store.ts` | `export const useProductStore` |
+| React hook | `use` | `use-*.ts` | `export const useProducts` |
+| Util | sin prefijo | `*.utils.ts` | `debt-calculator.utils.ts` |
+| Componente | PascalCase | `[Name].tsx` | `export function ProductCard()` |
+| Zod schema | sin prefijo | `*.schema.ts` | `const loginSchema`, `type TLoginFormData` |
+| Server Action | sin prefijo | `*.action.ts` | `create-product.action.ts` |
+| Client service | sin prefijo | `*-service.client.ts` | `product-service.client.ts` |
+| Server service | sin prefijo | `*-service.server.ts` | `product-service.server.ts` |
+| Constante | `UPPER_SNAKE_CASE` | `*.constants.ts` | `export const MAX_RESERVATION_DAYS = 30` |

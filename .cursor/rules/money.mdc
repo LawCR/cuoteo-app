@@ -1,0 +1,28 @@
+---
+description: Split igualitario, redondeo, saldos, tope de pago y greedy
+globs: "**/features/expenses/**,**/features/settlements/**"
+alwaysApply: false
+---
+
+# Split y redondeo
+
+- Cuota = monto / N entre seleccionados. 2 decimales PEN. Céntimos: **mayor resto**; empate por `id`. Suma de cuotas = monto.
+- Matemática en services de servidor con tests unitarios.
+
+# Saldos
+
+- Neto gastos = pagado − consumido. Restante = neto − payments. `> 0` acreedor, `< 0` deudor, `0` omitir en cobro/pago.
+- **Payment** aparte: no reescribir gastos. Sin confirmación del acreedor. `recordedBy` = sesión.
+
+# Registrar pago (Balance)
+
+- Botón en el **acreedor**. Sheet: “Registrar pago a {nombre}” (o “Registrar cobro” si el acreedor eres tú). CTA del sheet: **Registrar**.
+- ¿Quién paga?: solo deudores con restante ≠ 0; **nunca** el acreedor. Default = sesión si es deudor; si no, vacío.
+- Monto: `0 < monto ≤ min(|deuda|, |crédito|)`. Parciales dentro del tope. Ej.: A debe 30 y a B le deben 20 → A no puede pagar 30 a B.
+- Acreedor registrado: copiar teléfono; CCI solo si existe. Fantasma: sin datos de cobro.
+- Cualquier registrado puede registrar. Cubierto: ambos registrados; deudor fantasma + acreedor registrado; deudor registrado + acreedor fantasma; ambos fantasmas (un registrado asienta el movimiento). Recalcular greedy tras cada pago.
+
+# Cierre y greedy
+
+- Completar pagos: asiento(s) de cierre en historial, saldos a 0; no borrar en silencio. Destacar si `registrados === 1`.
+- Greedy sobre restantes: una solución con **mínima cantidad** de transferencias; empate = la primera.

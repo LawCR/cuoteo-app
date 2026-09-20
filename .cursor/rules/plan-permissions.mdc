@@ -1,0 +1,36 @@
+---
+description: Fases del plan, permisos, salir/quitar e integrante tardío
+globs: "**/features/plans/**,**/features/expenses/**,**/features/settlements/**"
+alwaysApply: false
+---
+
+# Fases
+
+- **Activo:** CRUD integrantes y gastos, editar nombre/ícono, **gráfica de dona** (reparto por integrante) y lista.
+- **Balance:** integrantes/gastos readonly (gastos en vista secundaria); pagos; greedy; historial; WhatsApp. Acreedor: badge/fondo **verde** + saldo a favor. Deudor: **rojo** + saldo en contra.
+- **Completado:** readonly + share (misma dona). Cero mutaciones.
+
+# Transiciones
+
+- → Balance: cualquier registrado; ≥ 2 miembros y ≥ 1 gasto (si 0 gastos, CTA bloqueado). Modal: no se podrán editar gastos ni integrantes hasta volver (si aplica).
+- ← Activo: cualquier registrado si **0 pagos**; o creador borra **todos los pagos** (no gastos) + modal.
+- Completar pagos: solo creador; asientos de cierre en historial; el plan **sigue en Balance**. Destacar el atajo si hay **un solo registrado**.
+- Completar plan: solo creador; saldos ya en 0 → Completado.
+
+# Permisos
+
+- Cualquier registrado miembro (Activo): gastos CRUD, agregar amigos/fantasmas, editar plan, pasar a Balance.
+- Solo creador: quitar miembros, borrar plan (cascade, cualquier fase), Completar pagos/plan, wipe de pagos.
+- Creador **no se sale**. Único registrado = lo mismo: solo eliminar el plan.
+- Registrar/anular pago: cualquier registrado, **solo Balance**.
+
+# Salir o quitar (solo Activo)
+
+- Borrar gastos donde es **pagador**.
+- En gastos de otro pagador: sacarlo del split y recalcular; el gasto permanece.
+- Borrar su fila de miembro.
+
+# Tardío (Activo, si ya hay gastos)
+
+- A (default): solo gastos futuros.
+- B: incluir en **todos** los gastos pasados (también con exclusiones ajenas); pagador no cambia. Sin gastos previos: sin modal.

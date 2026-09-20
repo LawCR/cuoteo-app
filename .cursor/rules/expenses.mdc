@@ -1,0 +1,22 @@
+---
+description: Formulario de gastos, categorías e íconos del plan
+globs: "**/features/expenses/**,**/features/plans/**"
+alwaysApply: false
+---
+
+# Gastos (Activo)
+
+- Campos: concepto, monto PEN, categoría, pagador, dividido entre (todos por defecto; se puede excluir; N ≥ 1).
+- **Pagado por:** todos los integrantes (registrados y fantasmas). Default: sesión. No usar la etiqueta “Yo”.
+- Fecha = `createdAt`. Sin comprobante. CRUD de cualquier gasto por cualquier registrado miembro.
+- Gastos desbloqueados solo con **≥ 2 integrantes**.
+- Reparto del total: **gráfica de dona** por integrante (Activo y Completado; en Balance es secundaria respecto a saldos).
+
+# Categorías e íconos
+
+Mismo set para categoría de gasto e ícono de plan: Comida, Transporte, Alojamiento, Entretenimiento, Compras, Salud, Servicios, Otros.
+
+# Integrante en UI
+
+- Registrado: nombre; debajo email. **Pueden repetir nombre** entre sí.
+- Fantasma: nombre único por plan (trim, case-insensitive); debajo “Invitado”.

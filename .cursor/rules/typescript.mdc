@@ -1,0 +1,16 @@
+---
+description: Estándares TypeScript y tamaño de componentes React
+globs: "**/*.ts,**/*.tsx"
+alwaysApply: false
+---
+
+# TypeScript
+
+- Prohibido `any`. Usar `unknown` con narrowing o type guards.
+- Evitar `as` salvo que sea estrictamente necesario, con un comentario breve que explique la excepción.
+- Toda función exportada en services y hooks **debe** declarar el tipo de retorno.
+
+# React
+
+- Referencia de ~250 líneas por archivo de componente.
+- Si se supera, extraer hooks locales o subcomponentes. No atomizar UI pequeña antes de tiempo.

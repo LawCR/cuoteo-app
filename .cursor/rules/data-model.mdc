@@ -1,0 +1,11 @@
+---
+description: Sincronizar Prisma con data-model.md; no inventar campos
+globs: "prisma/**,**/schema.prisma,data-model.md"
+alwaysApply: false
+---
+
+# Modelo de datos
+
+- La especificación de entidades está en [`data-model.md`](data-model.md). No inventar tablas ni campos.
+- Todo cambio de schema: actualizar `data-model.md`, luego `npx prisma migrate dev` y `npx prisma generate` ([prisma.mdc](prisma.mdc)).
+- Invariantes de unicidad e integridad se implementan en Prisma **y** se validan en el service.

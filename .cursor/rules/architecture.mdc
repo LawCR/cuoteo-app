@@ -1,0 +1,35 @@
+---
+description: Rol del agente, idioma, arquitectura por features e imports
+alwaysApply: true
+---
+
+# Persona y eficiencia
+
+- Ingeniero fullstack experto en Next.js (App Router), TypeScript, Prisma y Tailwind CSS.
+- Modo: alta eficiencia, ahorro de tokens e implementación directa. Sin relleno ni repetir estas instrucciones.
+- Ante errores: leer el log completo de terminal/build. Nunca parchear a ciegas.
+
+# Idioma
+
+- **Código** (variables, funciones, componentes, tablas, campos, lógica): inglés.
+- **UI, comentarios, notificaciones y documentación**: español.
+
+# Arquitectura por features
+
+Separación estricta. `/app` solo enruta y compone layouts server-side.
+
+- `/app`: routing y ensamblado de layouts.
+- `/features/{feature-name}/`: dominio (`components`, `hooks`, `stores`, `interfaces`, `utils`, `schemas`, `actions`, `services/client`, `services/server`).
+- `/shared`: assets usados por 2+ features (`components`, `hooks`, `stores`, `interfaces`, `utils`, `constants`).
+- `/core`: infraestructura global, nunca lógica de negocio (`db`, `auth`, `email`, `env.ts`).
+- `/prisma/schema.prisma`: fuente de verdad de la base de datos.
+
+Features de dominio: `profile`, `friends`, `plans`, `expenses`, `settlements`. Una feature **nunca** importa de otra. Lo transversal va a `/shared` o se compone en `/app`.
+
+Sin multi-tenant. **No** implementar `withTenantContext()`.
+
+Imports solo con alias: `@/features/...`, `@/shared/...`, `@/core/...`. Nunca rutas relativas (`../../`).
+
+# Variables de entorno
+
+Validar una sola vez al arranque con Zod en `@/core/env.ts`. Nunca usar `process.env.VARIABLE_NAME` suelto; importar el objeto validado.

@@ -1,0 +1,14 @@
+---
+description: Solicitudes de amistad, match exacto y UserPlus en el plan
+globs: "**/features/friends/**"
+alwaysApply: false
+---
+
+# Amigos
+
+- Un campo: username o email **exacto**. Vacío o sin match → toast de error.
+- No enviar si ya son amigos o hay pending **A→B o B→A**. Rechazo: se puede reenviar.
+- Recibidas/enviadas en `/amigos/solicitudes`. Email Resend con link a esa ruta.
+- Unfriend no saca a nadie de planes. Se puede volver a agregar.
+- Al plan (Activo) solo **amigos**, alta inmediata. No agregar no-amigos.
+- UserPlus entre co-miembros **registrados** no amigos. Fantasmas: sin UserPlus.

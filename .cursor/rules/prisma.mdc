@@ -1,0 +1,14 @@
+---
+description: Convenciones de modelos Prisma, transacciones y migraciones
+globs: "prisma/**,**/schema.prisma"
+alwaysApply: false
+---
+
+# Prisma
+
+- Prohibido `$queryRaw` salvo que sea imprescindible y esté documentado en comentarios.
+- Writes multi-tabla: usar `$transaction` de forma obligatoria (p. ej. `Order` + `OrderItem` + métricas de `Product`).
+- Todo modelo incluye `id`, `createdAt` y `updatedAt`.
+- Modelos en `PascalCase` singular. Campos en `camelCase`. Columnas DB en `snake_case` con `@map`.
+- Nunca editar `schema.prisma` sin migración y generación: `npx prisma migrate dev --name <description>` y luego `npx prisma generate`.
+- Seed solo en `prisma/seed.ts`.

@@ -1,0 +1,15 @@
+---
+description: Manejo de errores en services/actions y estrategia de tests unitarios e integración
+alwaysApply: false
+---
+
+# Errores
+
+- **Services:** lanzar clases tipadas (`NotFoundError`, `ValidationError`, `UnauthorizedError`). Nunca `Error` genérico.
+- **Traducción:** solo Server Actions o Route Handlers convierten excepciones en notificaciones/toasts en español. Los services no escriben texto de presentación.
+- Nunca un `catch` vacío. Registrar o manejar el error de forma explícita.
+
+# Tests
+
+- Unitarios para funciones puras de servidor en `/features/*/services/server/`.
+- Integración en checkout, autenticación y flujos fullstack críticos.
