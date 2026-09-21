@@ -70,8 +70,8 @@ Objetivo: sesión Clerk + `User` + onboarding + perfil con CCI opcional.
   Criterio: sin perfil completo no se entra a `/dashboard`; username y teléfono únicos.
   Rules: `.cursor/rules/auth-onboarding.mdc` · `.cursor/rules/naming.mdc`
 
-- [ ] Página `/perfil` (CCI/banco opcionales)
-  Criterio: se edita cobro; sin CCI no hay acción de copiar CCI; sin QR. Incluye toggle de tema (Claro / Oscuro / Sistema).
+- [x] Página `/perfil` (CCI/banco opcionales)
+  Criterio: se edita cobro (banco, CCI, número de cuenta); sin CCI no hay acción de copiar CCI; sin cuenta no hay acción de copiar cuenta; sin QR. Incluye toggle de tema (Claro / Oscuro / Sistema).
   Rules: `.cursor/rules/auth-onboarding.mdc` · `.cursor/rules/product-mvp.mdc` · `.cursor/rules/app-routing.mdc` · `.cursor/rules/ui.mdc`
 
 ---

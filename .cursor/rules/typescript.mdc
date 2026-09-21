@@ -14,3 +14,4 @@ alwaysApply: false
 
 - Referencia de ~250 líneas por archivo de componente.
 - Si se supera, extraer hooks locales o subcomponentes. No atomizar UI pequeña antes de tiempo.
+- Formularios: ver `.cursor/rules/forms.mdc` (react-hook-form + Zod).

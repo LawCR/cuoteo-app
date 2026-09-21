@@ -19,7 +19,7 @@ alwaysApply: false
 - Botón en el **acreedor**. Sheet: “Registrar pago a {nombre}” (o “Registrar cobro” si el acreedor eres tú). CTA del sheet: **Registrar**.
 - ¿Quién paga?: solo deudores con restante ≠ 0; **nunca** el acreedor. Default = sesión si es deudor; si no, vacío.
 - Monto: `0 < monto ≤ min(|deuda|, |crédito|)`. Parciales dentro del tope. Ej.: A debe 30 y a B le deben 20 → A no puede pagar 30 a B.
-- Acreedor registrado: copiar teléfono; CCI solo si existe. Fantasma: sin datos de cobro.
+- Acreedor registrado: copiar teléfono; CCI y número de cuenta solo si existen. Fantasma: sin datos de cobro.
 - Cualquier registrado puede registrar. Cubierto: ambos registrados; deudor fantasma + acreedor registrado; deudor registrado + acreedor fantasma; ambos fantasmas (un registrado asienta el movimiento). Recalcular greedy tras cada pago.
 
 # Cierre y greedy

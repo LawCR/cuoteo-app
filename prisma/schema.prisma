@@ -17,6 +17,7 @@ model User {
   phone              String   @unique
   bankName           String?  @map("bank_name")
   cci                String?
+  accountNumber      String?  @map("account_number")
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 

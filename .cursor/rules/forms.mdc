@@ -1,0 +1,12 @@
+---
+description: React Hook Form + Zod para formularios
+globs: "**/*.schema.ts,features/**/components/**/*.tsx,shared/components/ui/form.tsx"
+alwaysApply: false
+---
+
+# Formularios
+
+- Preferir **react-hook-form** + el schema Zod de la feature (`zodResolver`). No duplicar el estado de campos con `useState`.
+- Mostrar errores **por campo** en español (`FormMessage`). Toast solo para fallos de servidor (conflicto, red, sesión).
+- La Server Action **vuelve a validar** el mismo schema. No confiar solo en el cliente.
+- Primitivos `Form` / `FormField` en `@/shared/components/ui/form`. Selects con `@/shared/components/ui/select` (no `<select>` nativo: el menú nativo no respeta el tema).

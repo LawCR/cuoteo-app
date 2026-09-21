@@ -57,7 +57,8 @@ Perfil Cuoteo ligado a Clerk.
 | `usernameNormalized` | String | Unique; `username.trim().toLowerCase()` |
 | `phone` | String | Unique; E.164 `+51` + 9 dígitos |
 | `bankName` | String? | Opcional |
-| `cci` | String? | Opcional |
+| `cci` | String? | Opcional; 20 dígitos si está presente |
+| `accountNumber` | String? | Opcional; 8–20 dígitos si está presente |
 | `createdAt` / `updatedAt` | DateTime | |
 
 Onboarding incompleto = no existe fila `User` o faltan `name` / `username` / `phone` (el gate no deja pasar al dashboard).
