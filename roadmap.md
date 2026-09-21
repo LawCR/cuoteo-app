@@ -58,7 +58,7 @@ Objetivo: tokens teal, shadcn y tema claro/oscuro persistido, sin dominio de neg
 
 Objetivo: sesión Clerk + `User` + onboarding + perfil con CCI opcional.
 
-- [ ] Integrar Clerk (email/password y Google) y middleware
+- [x] Integrar Clerk (email/password y Google) y middleware
   Criterio: login/logout hosted; rutas de app protegidas; auth fuera del group `(app)`.
   Rules: `.cursor/rules/auth-onboarding.mdc` · `.cursor/rules/app-routing.mdc`
 
