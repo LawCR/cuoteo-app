@@ -42,7 +42,7 @@ Objetivo: tokens teal, shadcn y tema claro/oscuro persistido, sin dominio de neg
   Criterio: `:root` y `.dark` con paleta teal + `success`/`warning`/`destructive`/`info`/`chart-1`…`8`; `class` en `<html>`; default `system`; persistencia `localStorage`. No pintar con `prefers-color-scheme`.
   Rules: `.cursor/rules/ui.mdc` · `.cursor/rules/product-mvp.mdc`
 
-- [ ] Inicializar shadcn (New York, zinc) en `/shared`
+- [x] Inicializar shadcn (New York, zinc) en `/shared`
   Criterio: `components.json`, `cn()`, primitivos base (`Button`, `Input`, `Label`, `Card`, `Badge`, `Separator`, `Sheet`, `Sonner`). Features no duplican primitivos.
   Rules: `.cursor/rules/ui.mdc` · `.cursor/rules/architecture.mdc` · `.cursor/rules/naming.mdc`
 
