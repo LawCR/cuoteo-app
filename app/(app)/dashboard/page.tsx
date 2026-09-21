@@ -1,10 +1,7 @@
 import type { ReactElement } from "react";
-import { requireAppUser } from "@/core/auth/app-user.utils";
 import { AppUserButton } from "@/shared/components/AppUserButton";
 
-export default async function DashboardPage(): Promise<ReactElement> {
-  await requireAppUser();
-
+export default function DashboardPage(): ReactElement {
   return (
     <main className="flex min-h-full flex-1 flex-col gap-4 p-6">
       <div className="flex items-center justify-between">

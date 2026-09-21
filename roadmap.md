@@ -82,7 +82,7 @@ Objetivo: sesión Clerk + `User` + onboarding + perfil con CCI opcional.
 
 Objetivo: rutas y layout autenticado; pantallas placeholder.
 
-- [ ] Groups de rutas y redirects de `/`
+- [x] Groups de rutas y redirects de `/`
   Criterio: `/` reservada; logueado+onboarded → `/dashboard`; sin sesión → login Clerk.
   Rules: `.cursor/rules/app-routing.mdc`
 

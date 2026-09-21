@@ -1,4 +1,4 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import type { ReactElement } from "react";
 import { getAppUser } from "@/core/auth/app-user.utils";
@@ -13,8 +13,6 @@ import {
 } from "@/shared/components/ui/card";
 
 export default async function OnboardingPage(): Promise<ReactElement> {
-  await auth.protect();
-
   const appUser = await getAppUser();
 
   if (appUser) {

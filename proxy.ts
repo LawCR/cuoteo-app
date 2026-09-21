@@ -5,13 +5,11 @@ import { isPublicPath } from "@/core/auth/public-path.utils";
 export default clerkMiddleware(async (auth, req) => {
   const { pathname } = req.nextUrl;
 
-  if (isClerkHandshakePath(req.nextUrl.searchParams) || pathname === "/") {
+  if (isClerkHandshakePath(req.nextUrl.searchParams) || isPublicPath(pathname)) {
     return;
   }
 
-  if (!isPublicPath(pathname)) {
-    await auth.protect();
-  }
+  await auth.protect();
 });
 
 export const config = {

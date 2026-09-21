@@ -17,7 +17,7 @@ export function HomeSignedOutRedirect(): ReactElement {
     }
 
     if (isSignedIn) {
-      router.replace("/dashboard");
+      router.refresh();
       return;
     }
 
