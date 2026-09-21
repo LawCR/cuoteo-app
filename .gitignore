@@ -30,8 +30,16 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# Sensitive data - Block all production/local environment variables
+.env
+.env.local
+.env.production
+.env.development
+*.env
+*.env.*
+
+# Allow ONLY the example environment file for AI context
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +47,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# prisma generated client
+/generated/prisma

@@ -14,11 +14,11 @@ Fuente de verdad: este roadmap, `data-model.md` y `.cursor/rules`.
 
 Objetivo: env, Prisma, errores y convenciones listas para auth, sin dominio de negocio.
 
-- [ ] Validar env con Zod en `@/core/env.ts`
+- [x] Validar env con Zod en `@/core/env.ts`
   Criterio: el arranque falla si falta una variable; ningún `process.env` suelto.
   Rules: `.cursor/rules/architecture.mdc` · `.cursor/rules/product-mvp.mdc`
 
-- [ ] Inicializar Prisma y cliente en `@/core/db`
+- [x] Inicializar Prisma y cliente en `@/core/db`
   Criterio: `schema.prisma` vacío de dominio (o solo placeholder), `prisma generate` OK, export del client.
   Rules: `.cursor/rules/prisma.mdc` · `.cursor/rules/data-model.mdc` · `data-model.md`
 
