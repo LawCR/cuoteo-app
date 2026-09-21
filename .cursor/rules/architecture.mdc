@@ -20,7 +20,7 @@ Separación estricta. `/app` solo enruta y compone layouts server-side.
 
 - `/app`: routing y ensamblado de layouts.
 - `/features/{feature-name}/`: dominio (`components`, `hooks`, `stores`, `interfaces`, `utils`, `schemas`, `actions`, `services/client`, `services/server`).
-- `/shared`: assets usados por 2+ features (`components`, `hooks`, `stores`, `interfaces`, `utils`, `constants`).
+- `/shared`: assets usados por 2+ features (`components`, `hooks`, `stores`, `interfaces`, `utils`, `constants`). Primitivos shadcn en `@/shared/components/ui`.
 - `/core`: infraestructura global, nunca lógica de negocio (`db`, `auth`, `email`, `env.ts`).
 - `/prisma/schema.prisma`: fuente de verdad de la base de datos.
 

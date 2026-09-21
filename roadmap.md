@@ -34,7 +34,27 @@ Objetivo: env, Prisma, errores y convenciones listas para auth, sin dominio de n
 
 
 
-## Fase 1 — Auth y perfil
+## Fase 1 — Sistema de diseño
+
+Objetivo: tokens teal, shadcn y tema claro/oscuro persistido, sin dominio de negocio.
+
+- [x] Tokens CSS (claro/oscuro) y `next-themes`
+  Criterio: `:root` y `.dark` con paleta teal + `success`/`warning`/`destructive`/`info`/`chart-1`…`8`; `class` en `<html>`; default `system`; persistencia `localStorage`. No pintar con `prefers-color-scheme`.
+  Rules: `.cursor/rules/ui.mdc` · `.cursor/rules/product-mvp.mdc`
+
+- [ ] Inicializar shadcn (New York, zinc) en `/shared`
+  Criterio: `components.json`, `cn()`, primitivos base (`Button`, `Input`, `Label`, `Card`, `Badge`, `Separator`, `Sheet`, `Sonner`). Features no duplican primitivos.
+  Rules: `.cursor/rules/ui.mdc` · `.cursor/rules/architecture.mdc` · `.cursor/rules/naming.mdc`
+
+- [ ] `ThemeToggle` y `MoneyText` en `/shared`
+  Criterio: toggle Claro / Oscuro / Sistema; `MoneyText` PEN `es-PE` `tabular-nums` y color `success`/`destructive`. El toggle se monta en `/perfil` (Fase 2).
+  Rules: `.cursor/rules/ui.mdc` · `.cursor/rules/money.mdc` · `.cursor/rules/naming.mdc`
+
+---
+
+
+
+## Fase 2 — Auth y perfil
 
 Objetivo: sesión Clerk + `User` + onboarding + perfil con CCI opcional.
 
@@ -51,14 +71,14 @@ Objetivo: sesión Clerk + `User` + onboarding + perfil con CCI opcional.
   Rules: `.cursor/rules/auth-onboarding.mdc` · `.cursor/rules/naming.mdc`
 
 - [ ] Página `/perfil` (CCI/banco opcionales)
-  Criterio: se edita cobro; sin CCI no hay acción de copiar CCI; sin QR.
-  Rules: `.cursor/rules/auth-onboarding.mdc` · `.cursor/rules/product-mvp.mdc` · `.cursor/rules/app-routing.mdc`
+  Criterio: se edita cobro; sin CCI no hay acción de copiar CCI; sin QR. Incluye toggle de tema (Claro / Oscuro / Sistema).
+  Rules: `.cursor/rules/auth-onboarding.mdc` · `.cursor/rules/product-mvp.mdc` · `.cursor/rules/app-routing.mdc` · `.cursor/rules/ui.mdc`
 
 ---
 
 
 
-## Fase 2 — Shell de la app
+## Fase 3 — Shell de la app
 
 Objetivo: rutas y layout autenticado; pantallas placeholder.
 
@@ -66,9 +86,9 @@ Objetivo: rutas y layout autenticado; pantallas placeholder.
   Criterio: `/` reservada; logueado+onboarded → `/dashboard`; sin sesión → login Clerk.
   Rules: `.cursor/rules/app-routing.mdc`
 
-- [ ] Layout con sidebar (ítem Planes + subítems vacíos)
-  Criterio: navega a `/planes`; mobile-first y desktop; UI en español.
-  Rules: `.cursor/rules/app-routing.mdc` · `.cursor/rules/architecture.mdc` · `.cursor/rules/product-mvp.mdc`
+- [ ] Layout con nav Planes (subítems vacíos)
+  Criterio: navega a `/planes`; desktop sidebar fija; mobile hamburger + `Sheet`; UI en español.
+  Rules: `.cursor/rules/app-routing.mdc` · `.cursor/rules/architecture.mdc` · `.cursor/rules/product-mvp.mdc` · `.cursor/rules/ui.mdc`
 
 - [ ] Placeholders `/dashboard`, `/planes`, `/amigos`, `/amigos/solicitudes`
   Criterio: las cuatro rutas renderizan dentro del shell autenticado.
@@ -78,7 +98,7 @@ Objetivo: rutas y layout autenticado; pantallas placeholder.
 
 
 
-## Fase 3 — Amigos
+## Fase 4 — Amigos
 
 Objetivo: buscar, solicitar, aceptar/rechazar, listar; email Resend.
 
@@ -106,7 +126,7 @@ Objetivo: buscar, solicitar, aceptar/rechazar, listar; email Resend.
 
 
 
-## Fase 4 — Planes e integrantes
+## Fase 5 — Planes e integrantes
 
 Objetivo: CRUD de plan en Activo, miembros amigos/fantasmas, transiciones de fase sin gastos ni pagos reales.
 
@@ -134,12 +154,12 @@ Objetivo: CRUD de plan en Activo, miembros amigos/fantasmas, transiciones de fas
   Criterio: creador no sale; quitar solo creador; se borra el `PlanMember`.
   Rules: `.cursor/rules/plan-permissions.mdc`
 
-- [ ] Transición Activo → Balance (guardas de miembros; gastos llegan en Fase 5)
+- [ ] Transición Activo → Balance (guardas de miembros; gastos llegan en Fase 6)
   Criterio: cualquier registrado; bloqueado con < 2 miembros; modal: no se editarán gastos ni integrantes hasta volver.
   Rules: `.cursor/rules/plan-permissions.mdc`
 
 - [ ] Volver a Activo con 0 pagos y Completado readonly (cáscara)
-  Criterio: 0 pagos → cualquiera; Completado no muta. Wipe de pagos y Completar plan se cierran en Fase 6.
+  Criterio: 0 pagos → cualquiera; Completado no muta. Wipe de pagos y Completar plan se cierran en Fase 7.
   Rules: `.cursor/rules/plan-permissions.mdc`
 
 - [ ] Borrar plan en cascada (creador, cualquier fase)
@@ -150,7 +170,7 @@ Objetivo: CRUD de plan en Activo, miembros amigos/fantasmas, transiciones de fas
 
 
 
-## Fase 5 — Gastos
+## Fase 6 — Gastos
 
 Objetivo: split igualitario, exclusión, tardío, gráfica; habilita la guarda “≥ 1 gasto”.
 
@@ -186,7 +206,7 @@ Objetivo: split igualitario, exclusión, tardío, gráfica; habilita la guarda �
 
 
 
-## Fase 6 — Liquidación
+## Fase 7 — Liquidación
 
 Objetivo: payments, tope, greedy, anular, cierre de creador.
 
@@ -226,17 +246,17 @@ Objetivo: payments, tope, greedy, anular, cierre de creador.
 
 
 
-## Fase 7 — Cierre de superficie MVP
+## Fase 8 — Cierre de superficie MVP
 
-Objetivo: dashboard real, listado `/planes`, WhatsApp, sidebar con planes vivos.
+Objetivo: dashboard real, listado `/planes`, WhatsApp, nav con planes vivos.
 
 - [ ] Dashboard: KPIs, 10 amigos, planes Activo/Balance, CTA crear
   Criterio: saldo neto del usuario en planes Balance; badge de solicitudes.
   Rules: `.cursor/rules/app-routing.mdc` · `.cursor/rules/friends.mdc` · `.cursor/rules/money.mdc`
 
-- [ ] Sidebar: subítems de planes Activo y Balance
-  Criterio: Completado no aparece; clic va a `/planes/[id]`.
-  Rules: `.cursor/rules/app-routing.mdc`
+- [ ] Nav: subítems de planes Activo y Balance
+  Criterio: Completado no aparece; clic va a `/planes/[id]`. Mismos datos en sidebar desktop y Sheet mobile.
+  Rules: `.cursor/rules/app-routing.mdc` · `.cursor/rules/ui.mdc`
 
 - [ ] `/planes`: filtros fase, nombre, rango `createdAt`; ver y eliminar
   Criterio: eliminar solo creador, cualquier fase, cascade.

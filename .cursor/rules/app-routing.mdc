@@ -8,7 +8,7 @@ alwaysApply: false
 
 - Clerk **fuera** del group de la app. `/` reservada (landing futuro): sin sesión → login; con sesión → `/dashboard`.
 - App: `/dashboard`, `/planes`, `/planes/[id]`, `/amigos`, `/amigos/solicitudes`, `/perfil`.
-- Sidebar **Planes** → `/planes`. Subítems: planes **Activo** y **Balance** → `/planes/[id]`. Completado no va en el submenú.
+- Nav **Planes** → `/planes`. Subítems: planes **Activo** y **Balance** → `/planes/[id]`. Completado no va en el submenú. Desktop: sidebar fija. Mobile: hamburger + `Sheet`.
 - Dashboard: KPIs (conteo Activo/Balance, saldo neto del usuario en planes Balance, badge solicitudes), 10 amigos + ver todos, planes Activo/Balance, CTA crear plan.
 - `/planes`: filtros fase, nombre, rango `createdAt` del plan. Ver; eliminar solo creador (cualquier fase, cascade).
 - WhatsApp (Balance y Completado): `wa.me` / Share API con texto del balance **y** URL `/planes/[id]`. Los fantasmas no pueden abrir el link (login); es esperado. Los registrados sí.

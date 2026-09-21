@@ -7,6 +7,7 @@ alwaysApply: true
 
 - Web mobile-first y responsive desktop. Sin app nativa ni PWA.
 - Moneda **PEN**. Fechas en **`America/Lima`**.
+- Tema claro/oscuro persistido (`next-themes`, default sistema). El toggle vive solo en `/perfil`.
 - Auth: Clerk hosted (email/password y Google). Email transaccional: **solo Resend**, y solo solicitudes de amistad.
 
 # Fuera del MVP (V2)
