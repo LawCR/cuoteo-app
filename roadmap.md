@@ -62,11 +62,11 @@ Objetivo: sesión Clerk + `User` + onboarding + perfil con CCI opcional.
   Criterio: login/logout hosted; rutas de app protegidas; auth fuera del group `(app)`.
   Rules: `.cursor/rules/auth-onboarding.mdc` · `.cursor/rules/app-routing.mdc`
 
-- [ ] Schema `User` + migración
+- [x] Schema `User` + migración
   Criterio: campos y uniques de `data-model.md` (`clerkUserId`, `usernameNormalized`, `phone`).
   Rules: `data-model.md` · `.cursor/rules/data-model.mdc` · `.cursor/rules/prisma.mdc`
 
-- [ ] Onboarding obligatorio (nombre, username, teléfono)
+- [x] Onboarding obligatorio (nombre, username, teléfono)
   Criterio: sin perfil completo no se entra a `/dashboard`; username y teléfono únicos.
   Rules: `.cursor/rules/auth-onboarding.mdc` · `.cursor/rules/naming.mdc`
 

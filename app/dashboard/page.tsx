@@ -1,9 +1,9 @@
 import { UserButton } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
 import type { ReactElement } from "react";
+import { requireAppUser } from "@/core/auth/app-user.utils";
 
 export default async function DashboardPage(): Promise<ReactElement> {
-  await auth.protect();
+  await requireAppUser();
 
   return (
     <main className="flex min-h-full flex-1 flex-col gap-4 p-6">
