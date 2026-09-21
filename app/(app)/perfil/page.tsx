@@ -2,7 +2,6 @@ import type { ReactElement } from "react";
 import { requireAppUser } from "@/core/auth/app-user.utils";
 import { ProfileForm } from "@/features/profile/components/ProfileForm";
 import { toPeruNationalDigits } from "@/features/profile/utils/profile.utils";
-import { AppUserButton } from "@/shared/components/AppUserButton";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import {
   Card,
@@ -18,9 +17,6 @@ export default async function ProfilePage(): Promise<ReactElement> {
 
   return (
     <main className="flex min-h-full flex-1 flex-col p-6">
-      <div className="mb-6 flex justify-end">
-        <AppUserButton showProfileLink />
-      </div>
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
         <Card>
           <CardHeader>

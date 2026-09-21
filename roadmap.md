@@ -86,11 +86,11 @@ Objetivo: rutas y layout autenticado; pantallas placeholder.
   Criterio: `/` reservada; logueado+onboarded → `/dashboard`; sin sesión → login Clerk.
   Rules: `.cursor/rules/app-routing.mdc`
 
-- [ ] Layout con nav Planes (subítems vacíos)
+- [x] Layout con nav Planes (subítems vacíos)
   Criterio: navega a `/planes`; desktop sidebar fija; mobile hamburger + `Sheet`; UI en español.
   Rules: `.cursor/rules/app-routing.mdc` · `.cursor/rules/architecture.mdc` · `.cursor/rules/product-mvp.mdc` · `.cursor/rules/ui.mdc`
 
-- [ ] Placeholders `/dashboard`, `/planes`, `/amigos`, `/amigos/solicitudes`
+- [x] Placeholders `/dashboard`, `/planes`, `/amigos`, `/amigos/solicitudes`
   Criterio: las cuatro rutas renderizan dentro del shell autenticado.
   Rules: `.cursor/rules/app-routing.mdc` · `.cursor/rules/naming.mdc`
 
