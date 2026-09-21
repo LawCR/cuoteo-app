@@ -22,15 +22,17 @@ Objetivo: env, Prisma, errores y convenciones listas para auth, sin dominio de n
   Criterio: `schema.prisma` vacío de dominio (o solo placeholder), `prisma generate` OK, export del client.
   Rules: `.cursor/rules/prisma.mdc` · `.cursor/rules/data-model.mdc` · `data-model.md`
 
-- [ ] Clases de error de dominio (`NotFoundError`, `ValidationError`, `UnauthorizedError`)
+- [x] Clases de error de dominio (`NotFoundError`, `ValidationError`, `UnauthorizedError`)
   Criterio: services pueden lanzarlas; no se usa `Error` genérico en esa capa.
   Rules: `.cursor/rules/errors-testing.mdc` · `.cursor/rules/typescript.mdc`
 
-- [ ] Confirmar arquitectura sin tenant
+- [x] Confirmar arquitectura sin tenant
   Criterio: no existe `withTenantContext`; features previstas `profile`, `friends`, `plans`, `expenses`, `settlements`.
   Rules: `.cursor/rules/architecture.mdc`
 
 ---
+
+
 
 ## Fase 1 — Auth y perfil
 
@@ -54,6 +56,8 @@ Objetivo: sesión Clerk + `User` + onboarding + perfil con CCI opcional.
 
 ---
 
+
+
 ## Fase 2 — Shell de la app
 
 Objetivo: rutas y layout autenticado; pantallas placeholder.
@@ -71,6 +75,8 @@ Objetivo: rutas y layout autenticado; pantallas placeholder.
   Rules: `.cursor/rules/app-routing.mdc` · `.cursor/rules/naming.mdc`
 
 ---
+
+
 
 ## Fase 3 — Amigos
 
@@ -97,6 +103,8 @@ Objetivo: buscar, solicitar, aceptar/rechazar, listar; email Resend.
   Rules: `.cursor/rules/friends.mdc`
 
 ---
+
+
 
 ## Fase 4 — Planes e integrantes
 
@@ -140,6 +148,8 @@ Objetivo: CRUD de plan en Activo, miembros amigos/fantasmas, transiciones de fas
 
 ---
 
+
+
 ## Fase 5 — Gastos
 
 Objetivo: split igualitario, exclusión, tardío, gráfica; habilita la guarda “≥ 1 gasto”.
@@ -173,6 +183,8 @@ Objetivo: split igualitario, exclusión, tardío, gráfica; habilita la guarda �
   Rules: `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/app-routing.mdc` · `.cursor/rules/expenses.mdc`
 
 ---
+
+
 
 ## Fase 6 — Liquidación
 
@@ -212,6 +224,8 @@ Objetivo: payments, tope, greedy, anular, cierre de creador.
 
 ---
 
+
+
 ## Fase 7 — Cierre de superficie MVP
 
 Objetivo: dashboard real, listado `/planes`, WhatsApp, sidebar con planes vivos.
@@ -231,3 +245,4 @@ Objetivo: dashboard real, listado `/planes`, WhatsApp, sidebar con planes vivos.
 - [ ] Compartir WhatsApp (texto de balance + URL del plan)
   Criterio: Balance y Completado; `wa.me` o Share API; el link exige login (fantasmas no entran).
   Rules: `.cursor/rules/app-routing.mdc` · `.cursor/rules/money.mdc` · `.cursor/rules/product-mvp.mdc`
+
