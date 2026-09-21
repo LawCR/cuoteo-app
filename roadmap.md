@@ -46,7 +46,7 @@ Objetivo: tokens teal, shadcn y tema claro/oscuro persistido, sin dominio de neg
   Criterio: `components.json`, `cn()`, primitivos base (`Button`, `Input`, `Label`, `Card`, `Badge`, `Separator`, `Sheet`, `Sonner`). Features no duplican primitivos.
   Rules: `.cursor/rules/ui.mdc` · `.cursor/rules/architecture.mdc` · `.cursor/rules/naming.mdc`
 
-- [ ] `ThemeToggle` y `MoneyText` en `/shared`
+- [x] `ThemeToggle` y `MoneyText` en `/shared`
   Criterio: toggle Claro / Oscuro / Sistema; `MoneyText` PEN `es-PE` `tabular-nums` y color `success`/`destructive`. El toggle se monta en `/perfil` (Fase 2).
   Rules: `.cursor/rules/ui.mdc` · `.cursor/rules/money.mdc` · `.cursor/rules/naming.mdc`
 

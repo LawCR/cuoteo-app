@@ -2,6 +2,8 @@
 
 import type { ReactNode } from "react";
 import { Menu } from "lucide-react";
+import { MoneyText } from "@/shared/components/MoneyText";
+import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { toast } from "@/shared/components/ui/sonner";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -55,7 +57,8 @@ export function DesignSystemPreview(): ReactNode {
           </div>
           <CardTitle>Sistema de diseño</CardTitle>
           <CardDescription>
-            Paleta teal con shadcn. El interruptor de tema estará en perfil.
+            Paleta teal con shadcn. El interruptor vivirá en perfil; aquí se
+            prueba.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
@@ -76,6 +79,22 @@ export function DesignSystemPreview(): ReactNode {
                 className={`h-8 flex-1 rounded-md ${className}`}
               />
             ))}
+          </div>
+          <Separator />
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-medium">Tema</p>
+            <ThemeToggle />
+          </div>
+          <div className="flex flex-col gap-1 text-sm">
+            <p>
+              A favor: <MoneyText amount={42.5} />
+            </p>
+            <p>
+              En contra: <MoneyText amount={-18} />
+            </p>
+            <p>
+              En cero: <MoneyText amount={0} />
+            </p>
           </div>
           <Separator />
           <div className="flex flex-col gap-2">
