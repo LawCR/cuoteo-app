@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import { UserPlusIcon } from "lucide-react";
 
 export default function FriendsPage(): ReactElement {
   return (
@@ -16,8 +17,9 @@ export default function FriendsPage(): ReactElement {
         <h1 className="text-2xl font-semibold">Amigos</h1>
         <Link
           href="/amigos/solicitudes"
-          className="inline-flex min-h-11 w-fit items-center text-sm font-medium text-primary underline-offset-4 hover:underline"
+          className="inline-flex min-h-11 w-fit items-center gap-2 text-sm font-medium text-primary underline-offset-4 hover:underline"
         >
+          <UserPlusIcon className="size-4" />
           Ver solicitudes
         </Link>
       </div>

@@ -110,7 +110,7 @@ Objetivo: buscar, solicitar, aceptar/rechazar, listar; email Resend.
   Criterio: toast si no existe; bloqueo si pending A↔B o ya amigos.
   Rules: `.cursor/rules/friends.mdc` · `.cursor/rules/errors-testing.mdc`
 
-- [ ] Bandeja `/amigos/solicitudes` (enviadas y recibidas)
+- [x] Bandeja `/amigos/solicitudes` (enviadas y recibidas)
   Criterio: aceptar crea `Friendship`; rechazar permite reenviar después.
   Rules: `.cursor/rules/friends.mdc` · `.cursor/rules/app-routing.mdc`
 
