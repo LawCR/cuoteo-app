@@ -102,11 +102,11 @@ Objetivo: rutas y layout autenticado; pantallas placeholder.
 
 Objetivo: buscar, solicitar, aceptar/rechazar, listar; email Resend.
 
-- [ ] Schema `FriendRequest` y `Friendship` + migración
+- [x] Schema `FriendRequest` y `Friendship` + migración
   Criterio: uniques y estados según `data-model.md`.
   Rules: `data-model.md` · `.cursor/rules/data-model.mdc` · `.cursor/rules/prisma.mdc`
 
-- [ ] Enviar solicitud por username o email exacto
+- [x] Enviar solicitud por username o email exacto
   Criterio: toast si no existe; bloqueo si pending A↔B o ya amigos.
   Rules: `.cursor/rules/friends.mdc` · `.cursor/rules/errors-testing.mdc`
 

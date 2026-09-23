@@ -7,6 +7,13 @@ datasource db {
   provider = "postgresql"
 }
 
+enum FriendRequestStatus {
+  PENDING
+  REJECTED
+
+  @@map("friend_request_status")
+}
+
 model User {
   id                 String   @id @default(cuid())
   clerkUserId        String   @unique @map("clerk_user_id")
@@ -21,5 +28,40 @@ model User {
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 
+  friendRequestsSent     FriendRequest[] @relation("FriendRequestFrom")
+  friendRequestsReceived FriendRequest[] @relation("FriendRequestTo")
+  friendshipsAsLow       Friendship[]    @relation("FriendshipLow")
+  friendshipsAsHigh      Friendship[]    @relation("FriendshipHigh")
+
   @@map("users")
+}
+
+model FriendRequest {
+  id         String               @id @default(cuid())
+  fromUserId String               @map("from_user_id")
+  toUserId   String               @map("to_user_id")
+  status     FriendRequestStatus
+  createdAt  DateTime             @default(now()) @map("created_at")
+  updatedAt  DateTime             @updatedAt @map("updated_at")
+
+  fromUser User @relation("FriendRequestFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User @relation("FriendRequestTo", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@unique([fromUserId, toUserId])
+  @@index([toUserId, status])
+  @@map("friend_requests")
+}
+
+model Friendship {
+  id         String   @id @default(cuid())
+  userLowId  String   @map("user_low_id")
+  userHighId String   @map("user_high_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  userLow  User @relation("FriendshipLow", fields: [userLowId], references: [id], onDelete: Cascade)
+  userHigh User @relation("FriendshipHigh", fields: [userHighId], references: [id], onDelete: Cascade)
+
+  @@unique([userLowId, userHighId])
+  @@map("friendships")
 }

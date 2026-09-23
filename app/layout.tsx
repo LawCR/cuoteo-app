@@ -35,7 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <ThemeProvider>
             <div className="flex min-h-full flex-1 flex-col">
               {children}
-              <Toaster />
+              <Toaster richColors position="top-right" duration={3000} />
             </div>
           </ThemeProvider>
         </ClerkProvider>

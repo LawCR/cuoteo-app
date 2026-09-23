@@ -73,7 +73,7 @@ Onboarding incompleto = no existe fila `User` o faltan `name` / `username` / `ph
 | `toUserId` | String | FK User; ≠ `fromUserId` |
 | `status` | FriendRequestStatus | `PENDING` o `REJECTED` |
 
-Unique `(fromUserId, toUserId)`. No puede existir pending en **ningún** sentido a la vez (validar en service: ni A→B ni B→A pending). Aceptar: crear `Friendship` y borrar o archivar el request (recomendado: borrar requests entre el par).
+Unique `(fromUserId, toUserId)`. No puede existir pending en **ningún** sentido a la vez (validar en service: ni A→B ni B→A pending). Aceptar: crear `Friendship` y borrar o archivar el request (recomendado: borrar requests entre el par). Al borrar `User`: `onDelete: Cascade` (solicitudes enviadas y recibidas).
 
 ---
 
@@ -86,7 +86,7 @@ Par no dirigido.
 | `userLowId` | String | FK User; el `id` menor lexicográfico |
 | `userHighId` | String | FK User; el `id` mayor |
 
-Unique `(userLowId, userHighId)`. Unfriend: borrar esta fila. No toca `PlanMember`.
+Unique `(userLowId, userHighId)`. Unfriend: borrar esta fila. No toca `PlanMember`. Al borrar `User`: `onDelete: Cascade` (amistades en ambos lados).
 
 ---
 

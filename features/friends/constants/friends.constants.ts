@@ -1,0 +1,1 @@
+export const FRIEND_LOOKUP_MAX_LENGTH = 254;
