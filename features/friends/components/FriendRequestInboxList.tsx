@@ -6,7 +6,7 @@ import type { ReactElement } from "react";
 import { FriendUserCard } from "@/features/friends/components/FriendUserCard";
 import { ReceivedFriendRequestActions } from "@/features/friends/components/ReceivedFriendRequestActions";
 import type { IFriendRequestListItem } from "@/features/friends/interfaces/friend-request-inbox.interface";
-import { formatLimaDate } from "@/features/friends/utils/lima-date.utils";
+import { formatLimaDate } from "@/shared/utils/lima-date.utils";
 import { Badge } from "@/shared/components/ui/badge";
 import {
   Tabs,

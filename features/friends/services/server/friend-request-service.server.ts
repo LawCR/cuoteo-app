@@ -15,8 +15,8 @@ import type {
 import {
   isEmailLookup,
   normalizeUsernameLookup,
-  orderedUserPair,
 } from "@/features/friends/utils/friendship.utils";
+import { orderedUserPair } from "@/shared/utils/friendship.utils";
 import {
   FriendRequestStatus,
   Prisma,

@@ -5,7 +5,7 @@ import type {
   IFriendListItem,
   IRemoveFriendshipInput,
 } from "@/features/friends/interfaces/friendship.interface";
-import { orderedUserPair } from "@/features/friends/utils/friendship.utils";
+import { orderedUserPair } from "@/shared/utils/friendship.utils";
 
 const FRIEND_SELECT = {
   id: true,

@@ -15,6 +15,22 @@ export interface ICreatePlanInput {
   icon: ExpenseCategory;
 }
 
+export interface IPlanMemberItem {
+  id: string;
+  userId: string | null;
+  ghostName: string | null;
+  user: {
+    id: string;
+    name: string;
+    username: string;
+    email: string;
+  } | null;
+}
+
+export interface IPlanDetail extends IPlanSummary {
+  members: IPlanMemberItem[];
+}
+
 export interface IUpdatePlanMetadataInput {
   actorUserId: string;
   planId: string;
@@ -22,11 +38,28 @@ export interface IUpdatePlanMetadataInput {
   icon: ExpenseCategory;
 }
 
+export interface IAddFriendToPlanInput {
+  actorUserId: string;
+  planId: string;
+  friendUserId: string;
+}
+
+export interface IPlanFriendOption {
+  id: string;
+  name: string;
+  username: string;
+}
+
 export type TCreatePlanActionState = {
   error: string | null;
 };
 
 export type TUpdatePlanActionState = {
+  error: string | null;
+  success: boolean;
+};
+
+export type TAddFriendToPlanActionState = {
   error: string | null;
   success: boolean;
 };

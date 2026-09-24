@@ -138,7 +138,7 @@ Objetivo: CRUD de plan en Activo, miembros amigos/fantasmas, transiciones de fas
   Criterio: creador persistido; ícono del set de categorías; solo fase Activo edita metadatos.
   Rules: `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/expenses.mdc` · `.cursor/rules/naming.mdc`
 
-- [ ] Agregar amigo al plan (alta inmediata)
+- [x] Agregar amigo al plan (alta inmediata)
   Criterio: solo amigos; aparece en el dashboard del agregado; no se agrega un no-amigo.
   Rules: `.cursor/rules/friends.mdc` · `.cursor/rules/plan-permissions.mdc`
 

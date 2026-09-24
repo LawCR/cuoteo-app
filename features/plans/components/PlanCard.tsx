@@ -4,7 +4,7 @@ import { PlanCategoryIcon } from "@/features/plans/components/PlanCategoryIcon";
 import { PlanPhaseBadge } from "@/features/plans/components/PlanPhaseBadge";
 import { EXPENSE_CATEGORY_LABELS } from "@/features/plans/constants/plans.constants";
 import type { IPlanSummary } from "@/features/plans/interfaces/plan.interface";
-import { formatLimaDate } from "@/features/plans/utils/lima-date.utils";
+import { formatLimaDate } from "@/shared/utils/lima-date.utils";
 import { Card, CardContent } from "@/shared/components/ui/card";
 
 interface IPlanCardProps {
