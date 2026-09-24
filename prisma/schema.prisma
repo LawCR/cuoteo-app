@@ -14,6 +14,27 @@ enum FriendRequestStatus {
   @@map("friend_request_status")
 }
 
+enum PlanPhase {
+  ACTIVE
+  BALANCE
+  COMPLETED
+
+  @@map("plan_phase")
+}
+
+enum ExpenseCategory {
+  FOOD
+  TRANSPORT
+  LODGING
+  ENTERTAINMENT
+  SHOPPING
+  HEALTH
+  SERVICES
+  OTHER
+
+  @@map("expense_category")
+}
+
 model User {
   id                 String   @id @default(cuid())
   clerkUserId        String   @unique @map("clerk_user_id")
@@ -32,6 +53,8 @@ model User {
   friendRequestsReceived FriendRequest[] @relation("FriendRequestTo")
   friendshipsAsLow       Friendship[]    @relation("FriendshipLow")
   friendshipsAsHigh      Friendship[]    @relation("FriendshipHigh")
+  createdPlans           Plan[]          @relation("PlanCreator")
+  planMemberships        PlanMember[]
 
   @@map("users")
 }
@@ -64,4 +87,41 @@ model Friendship {
 
   @@unique([userLowId, userHighId])
   @@map("friendships")
+}
+
+model Plan {
+  id            String          @id @default(cuid())
+  name          String
+  icon          ExpenseCategory
+  phase         PlanPhase       @default(ACTIVE)
+  creatorUserId String          @map("creator_user_id")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  creator User         @relation("PlanCreator", fields: [creatorUserId], references: [id], onDelete: Restrict)
+  members PlanMember[]
+
+  @@index([creatorUserId])
+  @@index([phase])
+  @@index([createdAt])
+  @@map("plans")
+}
+
+model PlanMember {
+  id                   String   @id @default(cuid())
+  planId               String   @map("plan_id")
+  userId               String?  @map("user_id")
+  ghostName            String?  @map("ghost_name")
+  ghostNameNormalized  String?  @map("ghost_name_normalized")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  plan Plan  @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([planId, userId])
+  @@unique([planId, ghostNameNormalized])
+  @@index([planId])
+  @@index([userId])
+  @@map("plan_members")
 }

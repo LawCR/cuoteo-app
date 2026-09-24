@@ -21,9 +21,10 @@ export function FriendUserCard({
   actions,
   actionsPosition = 'top',
 }: IFriendUserCardProps): ReactElement {
+  const classFlex = actionsPosition === 'top' ? 'sm:flex-row-reverse' : 'sm:flex-row'
   return (
     <Card className='w-full py-4'>
-      <CardContent className={`flex flex-col gap-4 sm:flex-row${actionsPosition === 'top' ? '-reverse' : ''} sm:items-center sm:justify-between`}>
+      <CardContent className={`flex flex-col gap-4 ${classFlex} sm:items-center sm:justify-between`}>
         {actionsPosition === 'top' && actions ? (
           <div className='flex w-full shrink-0 flex-col items-stretch gap-2 sm:w-auto sm:items-end'>
             {actions}

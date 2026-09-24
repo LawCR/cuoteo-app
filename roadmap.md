@@ -130,11 +130,11 @@ Objetivo: buscar, solicitar, aceptar/rechazar, listar; email Resend.
 
 Objetivo: CRUD de plan en Activo, miembros amigos/fantasmas, transiciones de fase sin gastos ni pagos reales.
 
-- [ ] Schema `Plan` y `PlanMember` + migración
+- [x] Schema `Plan` y `PlanMember` + migración
   Criterio: `phase`, `icon` como categoría, fantasma vs `userId`, uniques de nombre fantasma.
   Rules: `data-model.md` · `.cursor/rules/data-model.mdc` · `.cursor/rules/prisma.mdc` · `.cursor/rules/expenses.mdc`
 
-- [ ] Crear/editar plan (nombre, ícono) y listar los del usuario
+- [x] Crear/editar plan (nombre, ícono) y listar los del usuario
   Criterio: creador persistido; ícono del set de categorías; solo fase Activo edita metadatos.
   Rules: `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/expenses.mdc` · `.cursor/rules/naming.mdc`
 
