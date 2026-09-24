@@ -114,7 +114,7 @@ Objetivo: buscar, solicitar, aceptar/rechazar, listar; email Resend.
   Criterio: aceptar crea `Friendship`; rechazar permite reenviar después.
   Rules: `.cursor/rules/friends.mdc` · `.cursor/rules/app-routing.mdc`
 
-- [ ] Email Resend al recibir solicitud
+- [x] Email Resend al recibir solicitud
   Criterio: el correo incluye link a `/amigos/solicitudes`.
   Rules: `.cursor/rules/friends.mdc` · `.cursor/rules/architecture.mdc` · `.cursor/rules/product-mvp.mdc`
 

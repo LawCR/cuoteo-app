@@ -1,6 +1,13 @@
+import type { FriendRequest } from "@/generated/prisma/client";
+
 export interface ISendFriendRequestInput {
   fromUserId: string;
   query: string;
+}
+
+export interface ISendFriendRequestResult {
+  request: FriendRequest;
+  toEmail: string;
 }
 
 export type TSendFriendRequestActionState = {

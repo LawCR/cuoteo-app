@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireAppUser } from "@/core/auth/app-user.utils";
 import { AppError } from "@/core/errors/app-error";
 import { ConflictError } from "@/core/errors/conflict.error";
+import { ExternalServiceError } from "@/core/errors/external-service.error";
 import { NotFoundError } from "@/core/errors/not-found.error";
 import { ValidationError } from "@/core/errors/validation.error";
 import type { TSendFriendRequestActionState } from "@/features/friends/interfaces/send-friend-request.interface";
@@ -11,6 +12,7 @@ import {
   sendFriendRequestSchema,
   type TSendFriendRequestFormData,
 } from "@/features/friends/schemas/send-friend-request.schema";
+import { sendFriendRequestReceivedEmail } from "@/features/friends/services/server/friend-request-email-service.server";
 import { sendFriendRequest } from "@/features/friends/services/server/friend-request-service.server";
 
 function conflictMessage(reason: string): string {
@@ -39,10 +41,24 @@ export async function sendFriendRequestAction(
   }
 
   try {
-    await sendFriendRequest({
+    const result = await sendFriendRequest({
       fromUserId: fromUser.id,
       query: parsed.data.query,
     });
+
+    try {
+      await sendFriendRequestReceivedEmail({
+        toEmail: result.toEmail,
+        fromName: fromUser.name,
+        fromUsername: fromUser.username,
+      });
+    } catch (error: unknown) {
+      if (error instanceof ExternalServiceError) {
+        console.error(error);
+      } else {
+        throw error;
+      }
+    }
   } catch (error: unknown) {
     if (error instanceof NotFoundError) {
       return {

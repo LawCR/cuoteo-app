@@ -3,7 +3,10 @@ import { ConflictError } from "@/core/errors/conflict.error";
 import { NotFoundError } from "@/core/errors/not-found.error";
 import { UnauthorizedError } from "@/core/errors/unauthorized.error";
 import { ValidationError } from "@/core/errors/validation.error";
-import type { ISendFriendRequestInput } from "@/features/friends/interfaces/send-friend-request.interface";
+import type {
+  ISendFriendRequestInput,
+  ISendFriendRequestResult,
+} from "@/features/friends/interfaces/send-friend-request.interface";
 import type {
   IFriendRequestInbox,
   IFriendRequestListItem,
@@ -44,7 +47,7 @@ async function findUserByLookup(query: string): Promise<User | null> {
 
 export async function sendFriendRequest(
   input: ISendFriendRequestInput,
-): Promise<FriendRequest> {
+): Promise<ISendFriendRequestResult> {
   const toUser = await findUserByLookup(input.query);
 
   if (!toUser) {
@@ -89,20 +92,20 @@ export async function sendFriendRequest(
   });
 
   try {
-    if (existing) {
-      return await prisma.friendRequest.update({
-        where: { id: existing.id },
-        data: { status: FriendRequestStatus.PENDING },
-      });
-    }
+    const request = existing
+      ? await prisma.friendRequest.update({
+          where: { id: existing.id },
+          data: { status: FriendRequestStatus.PENDING },
+        })
+      : await prisma.friendRequest.create({
+          data: {
+            fromUserId: input.fromUserId,
+            toUserId: toUser.id,
+            status: FriendRequestStatus.PENDING,
+          },
+        });
 
-    return await prisma.friendRequest.create({
-      data: {
-        fromUserId: input.fromUserId,
-        toUserId: toUser.id,
-        status: FriendRequestStatus.PENDING,
-      },
-    });
+    return { request, toEmail: toUser.email };
   } catch (error: unknown) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
