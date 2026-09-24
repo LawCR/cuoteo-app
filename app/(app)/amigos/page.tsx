@@ -1,6 +1,10 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
+import { UserPlusIcon } from "lucide-react";
+import { requireAppUser } from "@/core/auth/app-user.utils";
+import { FriendsList } from "@/features/friends/components/FriendsList";
 import { SendFriendRequestForm } from "@/features/friends/components/SendFriendRequestForm";
+import { listFriends } from "@/features/friends/services/server/friendship-service.server";
 import {
   Card,
   CardContent,
@@ -8,9 +12,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { UserPlusIcon } from "lucide-react";
 
-export default function FriendsPage(): ReactElement {
+export default async function FriendsPage(): Promise<ReactElement> {
+  const user = await requireAppUser();
+  const friends = await listFriends(user.id);
+
   return (
     <main className="flex min-h-full flex-1 flex-col gap-6 p-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -37,7 +43,10 @@ export default function FriendsPage(): ReactElement {
         </CardContent>
       </Card>
 
-      <p className="text-muted-foreground">Todavía no hay amigos en tu lista.</p>
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium">Tu lista</h2>
+        <FriendsList friends={friends} />
+      </section>
     </main>
   );
 }

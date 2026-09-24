@@ -118,7 +118,7 @@ Objetivo: buscar, solicitar, aceptar/rechazar, listar; email Resend.
   Criterio: el correo incluye link a `/amigos/solicitudes`.
   Rules: `.cursor/rules/friends.mdc` · `.cursor/rules/architecture.mdc` · `.cursor/rules/product-mvp.mdc`
 
-- [ ] Listado `/amigos` y eliminar amistad
+- [x] Listado `/amigos` y eliminar amistad
   Criterio: unfriend no altera planes; se puede volver a enviar solicitud.
   Rules: `.cursor/rules/friends.mdc`
 
