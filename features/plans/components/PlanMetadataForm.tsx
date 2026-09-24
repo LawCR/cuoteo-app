@@ -145,7 +145,8 @@ export function PlanMetadataForm(props: TPlanMetadataFormProps): ReactElement {
               </Select>
               {readOnly ? (
                 <FormDescription>
-                  Solo se puede editar el nombre y el ícono en fase Activo.
+                  El nombre y el ícono se pueden cambiar cuando el plan está
+                  activo.
                 </FormDescription>
               ) : null}
               <FormMessage />

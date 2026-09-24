@@ -4,12 +4,14 @@ import { NotFoundError } from "@/core/errors/not-found.error";
 import { ValidationError } from "@/core/errors/validation.error";
 import type {
   IAddFriendToPlanInput,
+  IAddGhostToPlanInput,
   ICreatePlanInput,
   IPlanDetail,
   IPlanMemberItem,
   IPlanSummary,
   IUpdatePlanMetadataInput,
 } from "@/features/plans/interfaces/plan.interface";
+import { normalizeGhostName } from "@/features/plans/utils/ghost-name.utils";
 import {
   PlanPhase,
   Prisma,
@@ -226,4 +228,46 @@ export async function addFriendToPlan(
       userId: input.friendUserId,
     },
   });
+}
+
+export async function addGhostToPlan(
+  input: IAddGhostToPlanInput,
+): Promise<void> {
+  const plan = await findAccessiblePlan(input.planId, input.actorUserId);
+  assertPlanIsActive(plan.phase);
+
+  const ghostName = input.ghostName.trim();
+  const ghostNameNormalized = normalizeGhostName(ghostName);
+
+  const existing = await prisma.planMember.findUnique({
+    where: {
+      planId_ghostNameNormalized: {
+        planId: plan.id,
+        ghostNameNormalized,
+      },
+    },
+  });
+
+  if (existing) {
+    throw new ConflictError("ghost_name_taken", { field: "ghostName" });
+  }
+
+  try {
+    await prisma.planMember.create({
+      data: {
+        planId: plan.id,
+        ghostName,
+        ghostNameNormalized,
+      },
+    });
+  } catch (error: unknown) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      throw new ConflictError("ghost_name_taken", { field: "ghostName" });
+    }
+
+    throw error;
+  }
 }

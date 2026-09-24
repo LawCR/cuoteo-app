@@ -142,7 +142,7 @@ Objetivo: CRUD de plan en Activo, miembros amigos/fantasmas, transiciones de fas
   Criterio: solo amigos; aparece en el dashboard del agregado; no se agrega un no-amigo.
   Rules: `.cursor/rules/friends.mdc` · `.cursor/rules/plan-permissions.mdc`
 
-- [ ] Crear fantasma (nombre único por plan)
+- [x] Crear fantasma (nombre único por plan)
   Criterio: UI “Invitado”; conflicto de nombre (case-insensitive) rechazado.
   Rules: `.cursor/rules/expenses.mdc` · `.cursor/rules/plan-permissions.mdc` · `data-model.md`
 

@@ -5,6 +5,7 @@ import { requireAppUser } from "@/core/auth/app-user.utils";
 import { NotFoundError } from "@/core/errors/not-found.error";
 import { listFriends } from "@/features/friends/services/server/friendship-service.server";
 import { AddFriendToPlanForm } from "@/features/plans/components/AddFriendToPlanForm";
+import { AddGhostToPlanForm } from "@/features/plans/components/AddGhostToPlanForm";
 import { PlanMemberList } from "@/features/plans/components/PlanMemberList";
 import { PlanMetadataForm } from "@/features/plans/components/PlanMetadataForm";
 import { PlanPhaseBadge } from "@/features/plans/components/PlanPhaseBadge";
@@ -82,8 +83,8 @@ export default async function PlanDetailPage({
           <CardTitle>Nombre e ícono</CardTitle>
           <CardDescription>
             {canEdit
-              ? "Cualquier integrante registrado puede editar estos datos mientras el plan esté activo."
-              : "El plan ya no está en Activo, así que estos datos no se pueden cambiar."}
+              ? "Puedes cambiar el nombre y el ícono mientras el plan esté activo."
+              : "El nombre y el ícono se pueden cambiar solo cuando el plan está activo."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -100,8 +101,8 @@ export default async function PlanDetailPage({
         <CardHeader>
           <CardTitle>Integrantes</CardTitle>
           <CardDescription>
-            Los registrados ven este plan en su listado. Unfriend no los saca
-            del plan.
+            Suma amigos de Cuoteo o invitados que todavía no tienen cuenta. Cada
+            invitado necesita un nombre distinto en este plan.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
@@ -110,10 +111,22 @@ export default async function PlanDetailPage({
             creatorUserId={plan.creatorUserId}
           />
           {canEdit ? (
-            <AddFriendToPlanForm planId={plan.id} friends={eligibleFriends} />
+            <>
+              <div className="flex flex-col gap-3">
+                <h2 className="text-base font-medium">Agregar amigo</h2>
+                <AddFriendToPlanForm
+                  planId={plan.id}
+                  friends={eligibleFriends}
+                />
+              </div>
+              <div className="flex flex-col gap-3">
+                <h2 className="text-base font-medium">Agregar invitado</h2>
+                <AddGhostToPlanForm planId={plan.id} />
+              </div>
+            </>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Solo se pueden agregar amigos en fase Activo.
+              Los integrantes se pueden cambiar solo cuando el plan está activo.
             </p>
           )}
         </CardContent>

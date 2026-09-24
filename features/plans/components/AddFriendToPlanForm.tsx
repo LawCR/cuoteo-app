@@ -61,14 +61,14 @@ export function AddFriendToPlanForm({
   if (friends.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        No hay amigos disponibles para agregar. Invita desde{" "}
+        No hay más amigos para sumar. Puedes invitar a alguien nuevo desde{" "}
         <Link
           href="/amigos"
           className="font-medium text-primary underline-offset-4 hover:underline"
         >
           Amigos
         </Link>{" "}
-        o espera a que alguien que aún no esté en el plan acepte tu solicitud.
+        o agregar un invitado sin cuenta.
       </p>
     );
   }

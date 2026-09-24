@@ -28,7 +28,7 @@ export default function NewPlanPage(): ReactElement {
         <CardHeader>
           <CardTitle>Datos del plan</CardTitle>
           <CardDescription>
-            Elige un nombre y un ícono. Quedarás como creador.
+            Elige un nombre y un ícono. Tú quedarás a cargo del plan.
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -44,6 +44,12 @@ export interface IAddFriendToPlanInput {
   friendUserId: string;
 }
 
+export interface IAddGhostToPlanInput {
+  actorUserId: string;
+  planId: string;
+  ghostName: string;
+}
+
 export interface IPlanFriendOption {
   id: string;
   name: string;
@@ -60,6 +66,11 @@ export type TUpdatePlanActionState = {
 };
 
 export type TAddFriendToPlanActionState = {
+  error: string | null;
+  success: boolean;
+};
+
+export type TAddGhostToPlanActionState = {
   error: string | null;
   success: boolean;
 };

@@ -41,7 +41,7 @@ export async function addFriendToPlanAction(
     if (error instanceof ValidationError) {
       if (error.message === "plan_not_active") {
         return {
-          error: "Solo se pueden agregar amigos en fase Activo.",
+          error: "Los amigos se pueden agregar solo cuando el plan está activo.",
           success: false,
         };
       }
