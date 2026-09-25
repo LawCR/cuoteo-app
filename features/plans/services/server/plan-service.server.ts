@@ -8,6 +8,7 @@ import type {
   IAddGhostToPlanInput,
   ICreatePlanInput,
   ILeavePlanInput,
+  IMovePlanToBalanceInput,
   IPlanDetail,
   IPlanMemberItem,
   IPlanSummary,
@@ -19,6 +20,7 @@ import {
   getLeavePlanDenial,
   getRemoveMemberDenial,
 } from "@/features/plans/utils/plan-membership-rules.utils";
+import { getMovePlanToBalanceDenial } from "@/features/plans/utils/plan-phase-rules.utils";
 import {
   PlanPhase,
   Prisma,
@@ -339,4 +341,32 @@ export async function removePlanMember(
   }
 
   await prisma.planMember.delete({ where: { id: member.id } });
+}
+
+export async function movePlanToBalance(
+  input: IMovePlanToBalanceInput,
+): Promise<IPlanSummary> {
+  const plan = await findAccessiblePlan(input.planId, input.actorUserId);
+  const memberCount = await prisma.planMember.count({
+    where: { planId: plan.id },
+  });
+  const denial = getMovePlanToBalanceDenial({
+    phase: plan.phase,
+    memberCount,
+  });
+
+  if (denial === "plan_not_active") {
+    throw new ValidationError("plan_not_active", { field: "planId" });
+  }
+
+  if (denial === "not_enough_members") {
+    throw new ValidationError("not_enough_members", { field: "planId" });
+  }
+
+  const updated = await prisma.plan.update({
+    where: { id: plan.id },
+    data: { phase: PlanPhase.BALANCE },
+  });
+
+  return toPlanSummary(updated);
 }

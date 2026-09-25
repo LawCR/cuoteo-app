@@ -154,7 +154,7 @@ Objetivo: CRUD de plan en Activo, miembros amigos/fantasmas, transiciones de fas
   Criterio: creador no sale; quitar registrados solo creador; quitar invitados cualquier miembro; se borra el `PlanMember`.
   Rules: `.cursor/rules/plan-permissions.mdc`
 
-- [ ] Transición Activo → Balance (guardas de miembros; gastos llegan en Fase 6)
+- [x] Transición Activo → Balance (guardas de miembros; gastos llegan en Fase 6)
   Criterio: cualquier registrado; bloqueado con < 2 miembros; modal: no se editarán gastos ni integrantes hasta volver.
   Rules: `.cursor/rules/plan-permissions.mdc`
 

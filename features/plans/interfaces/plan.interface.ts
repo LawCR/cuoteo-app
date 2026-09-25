@@ -61,6 +61,11 @@ export interface IRemovePlanMemberInput {
   memberId: string;
 }
 
+export interface IMovePlanToBalanceInput {
+  actorUserId: string;
+  planId: string;
+}
+
 export interface IPlanFriendOption {
   id: string;
   name: string;
@@ -92,6 +97,11 @@ export type TLeavePlanActionState = {
 };
 
 export type TRemovePlanMemberActionState = {
+  error: string | null;
+  success: boolean;
+};
+
+export type TMovePlanToBalanceActionState = {
   error: string | null;
   success: boolean;
 };

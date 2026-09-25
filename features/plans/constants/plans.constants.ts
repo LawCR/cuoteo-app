@@ -44,3 +44,5 @@ export const PLAN_PHASE_LABELS: Record<PlanPhase, string> = {
 export const DEFAULT_PLAN_ICON: ExpenseCategory = "FOOD";
 
 export const GHOST_NAME_MAX_LENGTH = 80;
+
+export const MIN_MEMBERS_TO_ENTER_BALANCE = 2;

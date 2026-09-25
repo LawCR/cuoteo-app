@@ -9,6 +9,7 @@ import { listFriends } from "@/features/friends/services/server/friendship-servi
 import { AddFriendToPlanForm } from "@/features/plans/components/AddFriendToPlanForm";
 import { AddGhostToPlanForm } from "@/features/plans/components/AddGhostToPlanForm";
 import { LeavePlanButton } from "@/features/plans/components/LeavePlanButton";
+import { MovePlanToBalanceButton } from "@/features/plans/components/MovePlanToBalanceButton";
 import { PlanMemberList } from "@/features/plans/components/PlanMemberList";
 import { PlanMetadataForm } from "@/features/plans/components/PlanMetadataForm";
 import { PlanPhaseBadge } from "@/features/plans/components/PlanPhaseBadge";
@@ -134,8 +135,16 @@ export default async function PlanDetailPage({
           Creado el {formatLimaDate(plan.createdAt)}
           {isCreator ? " · Eres el creador" : null}
         </p>
-        {canEdit && !isCreator ? (
-          <LeavePlanButton planId={plan.id} planName={plan.name} />
+        {canEdit ? (
+          <div className="flex flex-col gap-3">
+            {!isCreator ? (
+              <LeavePlanButton planId={plan.id} planName={plan.name} />
+            ) : null}
+            <MovePlanToBalanceButton
+              planId={plan.id}
+              memberCount={plan.members.length}
+            />
+          </div>
         ) : null}
       </div>
 

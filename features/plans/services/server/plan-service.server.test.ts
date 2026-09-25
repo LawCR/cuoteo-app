@@ -6,26 +6,31 @@ import { PlanPhase } from "@/generated/prisma/client";
 
 const mocks = vi.hoisted(() => ({
   planFindFirst: vi.fn(),
+  planUpdate: vi.fn(),
   planMemberFindUnique: vi.fn(),
   planMemberFindFirst: vi.fn(),
   planMemberDelete: vi.fn(),
+  planMemberCount: vi.fn(),
 }));
 
 vi.mock("@/core/db", () => ({
   prisma: {
     plan: {
       findFirst: mocks.planFindFirst,
+      update: mocks.planUpdate,
     },
     planMember: {
       findUnique: mocks.planMemberFindUnique,
       findFirst: mocks.planMemberFindFirst,
       delete: mocks.planMemberDelete,
+      count: mocks.planMemberCount,
     },
   },
 }));
 
 import {
   leavePlan,
+  movePlanToBalance,
   removePlanMember,
 } from "@/features/plans/services/server/plan-service.server";
 
@@ -180,6 +185,63 @@ describe("removePlanMember", () => {
         actorUserId: CREATOR_ID,
         planId: PLAN_ID,
         memberId: "missing",
+      }),
+    ).rejects.toBeInstanceOf(NotFoundError);
+  });
+});
+
+describe("movePlanToBalance", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.planFindFirst.mockResolvedValue(makePlan());
+    mocks.planMemberCount.mockResolvedValue(2);
+    mocks.planUpdate.mockResolvedValue(makePlan(PlanPhase.BALANCE));
+  });
+
+  it("pasa a Balance con al menos 2 integrantes", async () => {
+    const result = await movePlanToBalance({
+      actorUserId: MEMBER_USER_ID,
+      planId: PLAN_ID,
+    });
+
+    expect(mocks.planUpdate).toHaveBeenCalledWith({
+      where: { id: PLAN_ID },
+      data: { phase: PlanPhase.BALANCE },
+    });
+    expect(result.phase).toBe(PlanPhase.BALANCE);
+  });
+
+  it("bloquea con menos de 2 integrantes", async () => {
+    mocks.planMemberCount.mockResolvedValue(1);
+
+    await expect(
+      movePlanToBalance({
+        actorUserId: MEMBER_USER_ID,
+        planId: PLAN_ID,
+      }),
+    ).rejects.toMatchObject({ message: "not_enough_members" });
+    expect(mocks.planUpdate).not.toHaveBeenCalled();
+  });
+
+  it("bloquea si el plan no está activo", async () => {
+    mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.BALANCE));
+
+    await expect(
+      movePlanToBalance({
+        actorUserId: MEMBER_USER_ID,
+        planId: PLAN_ID,
+      }),
+    ).rejects.toBeInstanceOf(ValidationError);
+    expect(mocks.planUpdate).not.toHaveBeenCalled();
+  });
+
+  it("rechaza si el actor no pertenece al plan", async () => {
+    mocks.planFindFirst.mockResolvedValue(null);
+
+    await expect(
+      movePlanToBalance({
+        actorUserId: MEMBER_USER_ID,
+        planId: PLAN_ID,
       }),
     ).rejects.toBeInstanceOf(NotFoundError);
   });
