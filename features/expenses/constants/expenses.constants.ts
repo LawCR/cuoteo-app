@@ -1,0 +1,5 @@
+export const EXPENSE_TITLE_MAX_LENGTH = 80;
+
+export const MIN_MEMBERS_TO_CREATE_EXPENSE = 2;
+
+export const MAX_EXPENSE_AMOUNT = 9_999_999_999.99;

@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import type { ReactElement } from "react";
 import { requireAppUser } from "@/core/auth/app-user.utils";
 import { NotFoundError } from "@/core/errors/not-found.error";
+import { ExpenseSection } from "@/features/expenses/components/ExpenseSection";
+import type { IExpenseMemberOption } from "@/features/expenses/interfaces/expense.interface";
+import { listExpensesForPlan } from "@/features/expenses/services/server/expense-service.server";
 import { SendFriendRequestButton } from "@/features/friends/components/SendFriendRequestButton";
 import { listFriendRequests } from "@/features/friends/services/server/friend-request-service.server";
 import { listFriends } from "@/features/friends/services/server/friendship-service.server";
@@ -48,9 +51,10 @@ export default async function PlanDetailPage({
     throw error;
   }
 
-  const [friends, inbox] = await Promise.all([
+  const [friends, inbox, expenses] = await Promise.all([
     listFriends(user.id),
     listFriendRequests(user.id),
+    listExpensesForPlan(plan.id, user.id),
   ]);
   const friendIds = new Set(friends.map((item) => item.friend.id));
   const pendingPeerIds = new Set(
@@ -70,6 +74,20 @@ export default async function PlanDetailPage({
       name: item.friend.name,
       username: item.friend.username,
     }));
+  const expenseMembers: IExpenseMemberOption[] = plan.members.map((member) => {
+    const isGhost = member.userId === null;
+
+    return {
+      id: member.id,
+      name: isGhost
+        ? (member.ghostName ?? "Invitado")
+        : (member.user?.name ?? "Integrante"),
+      subtitle: isGhost ? "Invitado" : (member.user?.email ?? ""),
+    };
+  });
+  const sessionMemberId = plan.members.find(
+    (member) => member.userId === user.id,
+  )?.id;
   const canEdit = plan.phase === PlanPhase.ACTIVE;
   const isBalance = plan.phase === PlanPhase.BALANCE;
   const isCompleted = plan.phase === PlanPhase.COMPLETED;
@@ -122,7 +140,7 @@ export default async function PlanDetailPage({
   );
 
   return (
-    <main className="flex min-h-full flex-1 flex-col gap-6 p-6">
+    <main className="flex min-h-full flex-1 flex-col gap-6 p-4 sm:p-6">
       <div className="flex flex-col gap-3">
         <Link
           href="/planes"
@@ -216,6 +234,31 @@ export default async function PlanDetailPage({
               {isCompleted
                 ? "Este plan está completado. Los integrantes no se pueden cambiar."
                 : "Los integrantes se pueden cambiar solo cuando el plan está activo."}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="max-w-4xl">
+        <CardHeader>
+          <CardTitle>Gastos</CardTitle>
+          <CardDescription>
+            Concepto, monto, categoría y quién pagó. El reparto es igualitario
+            y puedes excluir integrantes.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {sessionMemberId ? (
+            <ExpenseSection
+              planId={plan.id}
+              members={expenseMembers}
+              sessionMemberId={sessionMemberId}
+              expenses={expenses}
+              canEdit={canEdit}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No encontramos tu membresía en este plan.
             </p>
           )}
         </CardContent>

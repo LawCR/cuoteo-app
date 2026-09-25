@@ -1,0 +1,60 @@
+import type { ExpenseCategory } from "@/generated/prisma/enums";
+
+export interface IExpenseMemberOption {
+  id: string;
+  name: string;
+  subtitle: string;
+}
+
+export interface IExpenseShareItem {
+  memberId: string;
+  shareAmount: number;
+}
+
+export interface IExpenseListItem {
+  id: string;
+  planId: string;
+  title: string;
+  amount: number;
+  category: ExpenseCategory;
+  paidByMemberId: string;
+  paidByName: string;
+  createdAt: Date;
+  shareMemberIds: string[];
+  shares: IExpenseShareItem[];
+}
+
+export interface ICreateExpenseInput {
+  actorUserId: string;
+  planId: string;
+  title: string;
+  amount: number;
+  category: ExpenseCategory;
+  paidByMemberId: string;
+  shareMemberIds: string[];
+}
+
+export interface IUpdateExpenseInput extends ICreateExpenseInput {
+  expenseId: string;
+}
+
+export interface IDeleteExpenseInput {
+  actorUserId: string;
+  planId: string;
+  expenseId: string;
+}
+
+export type TCreateExpenseActionState = {
+  error: string | null;
+  success: boolean;
+};
+
+export type TUpdateExpenseActionState = {
+  error: string | null;
+  success: boolean;
+};
+
+export type TDeleteExpenseActionState = {
+  error: string | null;
+  success: boolean;
+};

@@ -98,8 +98,9 @@ model Plan {
   createdAt     DateTime        @default(now()) @map("created_at")
   updatedAt     DateTime        @updatedAt @map("updated_at")
 
-  creator User         @relation("PlanCreator", fields: [creatorUserId], references: [id], onDelete: Restrict)
-  members PlanMember[]
+  creator  User         @relation("PlanCreator", fields: [creatorUserId], references: [id], onDelete: Restrict)
+  members  PlanMember[]
+  expenses Expense[]
 
   @@index([creatorUserId])
   @@index([phase])
@@ -116,12 +117,47 @@ model PlanMember {
   createdAt            DateTime @default(now()) @map("created_at")
   updatedAt            DateTime @updatedAt @map("updated_at")
 
-  plan Plan  @relation(fields: [planId], references: [id], onDelete: Cascade)
-  user User? @relation(fields: [userId], references: [id], onDelete: Restrict)
+  plan           Plan           @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user           User?          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  paidExpenses   Expense[]      @relation("ExpensePaidBy")
+  expenseShares  ExpenseShare[]
 
   @@unique([planId, userId])
   @@unique([planId, ghostNameNormalized])
   @@index([planId])
   @@index([userId])
   @@map("plan_members")
+}
+
+model Expense {
+  id             String           @id @default(cuid())
+  planId         String           @map("plan_id")
+  title          String
+  amount         Decimal          @db.Decimal(12, 2)
+  category       ExpenseCategory
+  paidByMemberId String           @map("paid_by_member_id")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  plan         Plan           @relation(fields: [planId], references: [id], onDelete: Cascade)
+  paidByMember PlanMember     @relation("ExpensePaidBy", fields: [paidByMemberId], references: [id], onDelete: Restrict)
+  shares       ExpenseShare[]
+
+  @@index([planId])
+  @@map("expenses")
+}
+
+model ExpenseShare {
+  id          String   @id @default(cuid())
+  expenseId   String   @map("expense_id")
+  memberId    String   @map("member_id")
+  shareAmount Decimal  @db.Decimal(12, 2) @map("share_amount")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  expense Expense    @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  member  PlanMember @relation(fields: [memberId], references: [id], onDelete: Restrict)
+
+  @@unique([expenseId, memberId])
+  @@map("expense_shares")
 }

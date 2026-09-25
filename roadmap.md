@@ -174,15 +174,15 @@ Objetivo: CRUD de plan en Activo, miembros amigos/fantasmas, transiciones de fas
 
 Objetivo: split igualitario, exclusión, tardío, gráfica; habilita la guarda “≥ 1 gasto”.
 
-- [ ] Schema `Expense` y `ExpenseShare` + migración
+- [x] Schema `Expense` y `ExpenseShare` + migración
   Criterio: pagador, shares con `shareAmount`, suma = monto.
   Rules: `data-model.md` · `.cursor/rules/data-model.mdc` · `.cursor/rules/prisma.mdc`
 
-- [ ] Util de split + redondeo (mayor resto) con tests
+- [x] Util de split + redondeo (mayor resto) con tests
   Criterio: tests unitarios; suma de cuotas = monto; empate por `id`.
   Rules: `.cursor/rules/money.mdc` · `.cursor/rules/errors-testing.mdc` · `.cursor/rules/typescript.mdc`
 
-- [ ] CRUD de gasto en Activo
+- [x] CRUD de gasto en Activo
   Criterio: ≥ 2 miembros; pagador = todos los integrantes default sesión; exclusión; 8 categorías; sin “Yo”.
   Rules: `.cursor/rules/expenses.mdc` · `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/naming.mdc`
 

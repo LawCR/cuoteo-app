@@ -1,10 +1,10 @@
 "use client";
 
-import { Trash } from "lucide-react";
+import { Trash2Icon } from "lucide-react";
 import { useState, useTransition } from "react";
 import type { ReactElement } from "react";
 import { toast } from "sonner";
-import { removePlanMemberAction } from "@/features/plans/actions/remove-plan-member.action";
+import { deleteExpenseAction } from "@/features/expenses/actions/delete-expense.action";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -17,23 +17,23 @@ import {
 } from "@/shared/components/ui/alert-dialog";
 import { Button } from "@/shared/components/ui/button";
 
-interface IRemovePlanMemberButtonProps {
+interface IDeleteExpenseButtonProps {
   planId: string;
-  memberId: string;
-  memberName: string;
+  expenseId: string;
+  expenseTitle: string;
 }
 
-export function RemovePlanMemberButton({
+export function DeleteExpenseButton({
   planId,
-  memberId,
-  memberName,
-}: IRemovePlanMemberButtonProps): ReactElement {
+  expenseId,
+  expenseTitle,
+}: IDeleteExpenseButtonProps): ReactElement {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  function confirmRemove(): void {
+  function confirmDelete(): void {
     startTransition(async () => {
-      const result = await removePlanMemberAction({ planId, memberId });
+      const result = await deleteExpenseAction({ planId, expenseId });
 
       if (result.error) {
         toast.error(result.error);
@@ -41,7 +41,7 @@ export function RemovePlanMemberButton({
       }
 
       if (result.success) {
-        toast.success("Integrante quitado del plan");
+        toast.success("Gasto eliminado");
         setOpen(false);
       }
     });
@@ -52,19 +52,20 @@ export function RemovePlanMemberButton({
       <AlertDialogTrigger asChild>
         <Button
           type="button"
-          variant="destructive"
+          variant="outline"
           size="icon-lg"
-          className="min-h-11 min-w-11"
-          aria-label={`Quitar a ${memberName} del plan`}
+          className="min-h-11 min-w-11 shrink-0 text-destructive"
+          aria-label={`Eliminar el gasto ${expenseTitle}`}
         >
-          <Trash />
+          <Trash2Icon />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Quitar integrante</AlertDialogTitle>
+          <AlertDialogTitle>Eliminar gasto</AlertDialogTitle>
           <AlertDialogDescription>
-            ¿Quitar a {memberName} de este plan?
+            Se eliminará “{expenseTitle}” y su reparto. Esta acción no se puede
+            deshacer.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -74,9 +75,9 @@ export function RemovePlanMemberButton({
             variant="destructive"
             className="min-h-11"
             disabled={isPending}
-            onClick={confirmRemove}
+            onClick={confirmDelete}
           >
-            {isPending ? "Quitando…" : "Quitar"}
+            {isPending ? "Eliminando…" : "Eliminar"}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -25,7 +25,7 @@ export default async function OnboardingPage(): Promise<ReactElement> {
   const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress ?? "";
 
   return (
-    <main className="flex min-h-full flex-1 flex-col p-6">
+    <main className="flex min-h-full flex-1 flex-col p-4 sm:p-6">
       <div className="mb-6 flex justify-end">
         <AppAccountMenu name={defaultName || clerkEmail} email={clerkEmail} />
       </div>
