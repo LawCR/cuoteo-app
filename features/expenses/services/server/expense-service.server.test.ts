@@ -44,10 +44,13 @@ const ACTOR_ID = "user-1";
 const MEMBER_A = "member-a";
 const MEMBER_B = "member-b";
 
+const MEMBER_C = "member-c";
+
 function makePlan(phase: PlanPhase = PlanPhase.ACTIVE, memberCount = 2) {
   const members = [
     { id: MEMBER_A, planId: PLAN_ID, userId: ACTOR_ID, ghostName: null },
     { id: MEMBER_B, planId: PLAN_ID, userId: "user-2", ghostName: null },
+    { id: MEMBER_C, planId: PLAN_ID, userId: "user-3", ghostName: null },
   ].slice(0, memberCount);
 
   return {
@@ -60,6 +63,19 @@ function makePlan(phase: PlanPhase = PlanPhase.ACTIVE, memberCount = 2) {
     updatedAt: new Date("2026-01-01"),
     members,
   };
+}
+
+function shareAmountsFromCall(call: {
+  data: {
+    shares: {
+      create: Array<{ memberId: string; shareAmount: { toString(): string } }>;
+    };
+  };
+}): Array<{ memberId: string; shareAmount: number }> {
+  return call.data.shares.create.map((share) => ({
+    memberId: share.memberId,
+    shareAmount: Number(share.shareAmount.toString()),
+  }));
 }
 
 function makeExpenseRecord() {
@@ -182,14 +198,15 @@ describe("updateExpense", () => {
     mocks.expenseFindFirst.mockResolvedValue({ id: "expense-1", planId: PLAN_ID });
     mocks.transaction.mockImplementation(async (callback: (tx: unknown) => unknown) =>
       callback({
-        expenseShare: { deleteMany: mocks.expenseShareDeleteMany },
         expense: { update: mocks.expenseUpdate },
       }),
     );
     mocks.expenseUpdate.mockResolvedValue(makeExpenseRecord());
   });
 
-  it("recalcula shares al editar", async () => {
+  it("reemplaza shares con split coherente al cambiar monto y exclusión", async () => {
+    mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.ACTIVE, 3));
+
     await updateExpense({
       actorUserId: ACTOR_ID,
       planId: PLAN_ID,
@@ -198,13 +215,56 @@ describe("updateExpense", () => {
       amount: 10,
       category: "FOOD",
       paidByMemberId: MEMBER_A,
-      shareMemberIds: [MEMBER_A, MEMBER_B],
+      shareMemberIds: [MEMBER_C, MEMBER_A, MEMBER_B],
     });
 
-    expect(mocks.expenseShareDeleteMany).toHaveBeenCalledWith({
-      where: { expenseId: "expense-1" },
+    const shares = shareAmountsFromCall(mocks.expenseUpdate.mock.calls[0][0]);
+    expect(shares).toEqual([
+      { memberId: MEMBER_C, shareAmount: 3.33 },
+      { memberId: MEMBER_A, shareAmount: 3.34 },
+      { memberId: MEMBER_B, shareAmount: 3.33 },
+    ]);
+    expect(
+      mocks.expenseUpdate.mock.calls[0][0].data.shares.deleteMany,
+    ).toEqual({});
+    expect(shares.reduce((total, share) => total + Math.round(share.shareAmount * 100), 0)).toBe(
+      1000,
+    );
+  });
+
+  it("recalcula entre los no excluidos", async () => {
+    await updateExpense({
+      actorUserId: ACTOR_ID,
+      planId: PLAN_ID,
+      expenseId: "expense-1",
+      title: "Ceviche",
+      amount: 10,
+      category: "FOOD",
+      paidByMemberId: MEMBER_A,
+      shareMemberIds: [MEMBER_B],
     });
-    expect(mocks.expenseUpdate).toHaveBeenCalled();
+
+    expect(shareAmountsFromCall(mocks.expenseUpdate.mock.calls[0][0])).toEqual([
+      { memberId: MEMBER_B, shareAmount: 10 },
+    ]);
+  });
+
+  it("bloquea el recálculo fuera de Activo", async () => {
+    mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.BALANCE));
+
+    await expect(
+      updateExpense({
+        actorUserId: ACTOR_ID,
+        planId: PLAN_ID,
+        expenseId: "expense-1",
+        title: "Ceviche",
+        amount: 10,
+        category: "FOOD",
+        paidByMemberId: MEMBER_A,
+        shareMemberIds: [MEMBER_A, MEMBER_B],
+      }),
+    ).rejects.toMatchObject({ message: "plan_not_active" });
+    expect(mocks.expenseUpdate).not.toHaveBeenCalled();
   });
 
   it("rechaza un gasto de otro plan", async () => {
@@ -230,18 +290,28 @@ describe("deleteExpense", () => {
     vi.clearAllMocks();
     mocks.planFindFirst.mockResolvedValue(makePlan());
     mocks.expenseFindFirst.mockResolvedValue({ id: "expense-1", planId: PLAN_ID });
+    mocks.transaction.mockImplementation(async (callback: (tx: unknown) => unknown) =>
+      callback({
+        expenseShare: { deleteMany: mocks.expenseShareDeleteMany },
+        expense: { delete: mocks.expenseDelete },
+      }),
+    );
   });
 
-  it("borra en Activo", async () => {
+  it("borra el gasto y sus shares en Activo", async () => {
     await deleteExpense({
       actorUserId: ACTOR_ID,
       planId: PLAN_ID,
       expenseId: "expense-1",
     });
 
+    expect(mocks.expenseShareDeleteMany).toHaveBeenCalledWith({
+      where: { expenseId: "expense-1" },
+    });
     expect(mocks.expenseDelete).toHaveBeenCalledWith({
       where: { id: "expense-1" },
     });
+    expect(mocks.expenseUpdate).not.toHaveBeenCalled();
   });
 
   it("bloquea en Completado", async () => {
@@ -254,5 +324,18 @@ describe("deleteExpense", () => {
         expenseId: "expense-1",
       }),
     ).rejects.toMatchObject({ message: "plan_not_active" });
+    expect(mocks.expenseDelete).not.toHaveBeenCalled();
+  });
+
+  it("bloquea en Balance", async () => {
+    mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.BALANCE));
+
+    await expect(
+      deleteExpense({
+        actorUserId: ACTOR_ID,
+        planId: PLAN_ID,
+        expenseId: "expense-1",
+      }),
+    ).rejects.toBeInstanceOf(ValidationError);
   });
 });

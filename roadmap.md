@@ -186,7 +186,7 @@ Objetivo: split igualitario, exclusión, tardío, gráfica; habilita la guarda �
   Criterio: ≥ 2 miembros; pagador = todos los integrantes default sesión; exclusión; 8 categorías; sin “Yo”.
   Rules: `.cursor/rules/expenses.mdc` · `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/naming.mdc`
 
-- [ ] Recálculo al editar/borrar gasto
+- [x] Recálculo al editar/borrar gasto
   Criterio: shares coherentes; solo fase Activo.
   Rules: `.cursor/rules/money.mdc` · `.cursor/rules/plan-permissions.mdc`
 

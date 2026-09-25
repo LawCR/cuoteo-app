@@ -66,3 +66,24 @@ export function splitEqualExpenseShares(
     };
   });
 }
+
+export function sumShareCents(shares: readonly IExpenseShareSplit[]): number {
+  return shares.reduce(
+    (total, share) => total + Math.round(share.shareAmount * PEN_CENTS),
+    0,
+  );
+}
+
+export function recalculateEqualExpenseShares(
+  amount: number,
+  memberIds: readonly string[],
+): IExpenseShareSplit[] {
+  const shares = splitEqualExpenseShares(amount, memberIds);
+  const totalCents = toPenCents(amount);
+
+  if (sumShareCents(shares) !== totalCents) {
+    throw new ValidationError("shares_do_not_cover_amount", { field: "amount" });
+  }
+
+  return shares;
+}

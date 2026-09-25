@@ -1,15 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { ValidationError } from "@/core/errors/validation.error";
-import { splitEqualExpenseShares } from "@/features/expenses/utils/expense-split.utils";
-
-function sumShareCents(
-  shares: ReturnType<typeof splitEqualExpenseShares>,
-): number {
-  return shares.reduce(
-    (total, share) => total + Math.round(share.shareAmount * 100),
-    0,
-  );
-}
+import {
+  recalculateEqualExpenseShares,
+  splitEqualExpenseShares,
+  sumShareCents,
+} from "@/features/expenses/utils/expense-split.utils";
 
 describe("splitEqualExpenseShares", () => {
   it("reparte sin residuo cuando el monto es divisible", () => {
@@ -79,5 +74,14 @@ describe("splitEqualExpenseShares", () => {
     expect(() => splitEqualExpenseShares(0, ["a"])).toThrow(
       "amount_not_positive",
     );
+  });
+});
+
+describe("recalculateEqualExpenseShares", () => {
+  it("mantiene suma = monto al excluir integrantes", () => {
+    const shares = recalculateEqualExpenseShares(10, ["b"]);
+
+    expect(shares).toEqual([{ memberId: "b", shareAmount: 10 }]);
+    expect(sumShareCents(shares)).toBe(1000);
   });
 });

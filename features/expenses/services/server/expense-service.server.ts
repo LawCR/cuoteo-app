@@ -7,7 +7,7 @@ import type {
   IExpenseListItem,
   IUpdateExpenseInput,
 } from "@/features/expenses/interfaces/expense.interface";
-import { splitEqualExpenseShares } from "@/features/expenses/utils/expense-split.utils";
+import { recalculateEqualExpenseShares } from "@/features/expenses/utils/expense-split.utils";
 import {
   getCreateExpenseDenial,
   getMutateExpenseDenial,
@@ -109,7 +109,7 @@ function assertMembersBelongToPlan(
 }
 
 function shareRows(amount: number, shareMemberIds: string[]) {
-  return splitEqualExpenseShares(amount, shareMemberIds).map((share) => ({
+  return recalculateEqualExpenseShares(amount, shareMemberIds).map((share) => ({
     memberId: share.memberId,
     shareAmount: new Prisma.Decimal(share.shareAmount.toFixed(2)),
   }));
@@ -196,10 +196,6 @@ export async function updateExpense(
   assertMembersBelongToPlan(plan, input.paidByMemberId, input.shareMemberIds);
 
   const updated = await prisma.$transaction(async (tx) => {
-    await tx.expenseShare.deleteMany({
-      where: { expenseId: input.expenseId },
-    });
-
     return tx.expense.update({
       where: { id: input.expenseId },
       data: {
@@ -208,6 +204,7 @@ export async function updateExpense(
         category: input.category,
         paidByMemberId: input.paidByMemberId,
         shares: {
+          deleteMany: {},
           create: shareRows(input.amount, input.shareMemberIds),
         },
       },
@@ -237,7 +234,12 @@ export async function deleteExpense(input: IDeleteExpenseInput): Promise<void> {
     throw new NotFoundError("expense_not_found", { field: "expenseId" });
   }
 
-  await prisma.expense.delete({
-    where: { id: input.expenseId },
+  await prisma.$transaction(async (tx) => {
+    await tx.expenseShare.deleteMany({
+      where: { expenseId: input.expenseId },
+    });
+    await tx.expense.delete({
+      where: { id: input.expenseId },
+    });
   });
 }
