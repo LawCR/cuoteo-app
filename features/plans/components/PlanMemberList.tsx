@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 import type { IPlanMemberItem } from "@/features/plans/interfaces/plan.interface";
 import { Badge } from "@/shared/components/ui/badge";
 import { Card, CardContent } from "@/shared/components/ui/card";
@@ -6,11 +6,13 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 interface IPlanMemberListProps {
   members: IPlanMemberItem[];
   creatorUserId: string;
+  memberActions?: Record<string, ReactNode>;
 }
 
 export function PlanMemberList({
   members,
   creatorUserId,
+  memberActions,
 }: IPlanMemberListProps): ReactElement {
   if (members.length === 0) {
     return (
@@ -26,6 +28,7 @@ export function PlanMemberList({
           ? (member.ghostName ?? "Invitado")
           : (member.user?.name ?? "Integrante");
         const isCreator = member.userId === creatorUserId;
+        const actions = memberActions?.[member.id];
 
         return (
           <li key={member.id}>
@@ -45,8 +48,13 @@ export function PlanMemberList({
                     </p>
                   )}
                 </div>
-                {isCreator ? (
-                  <Badge variant="secondary">Creador</Badge>
+                {actions || isCreator ? (
+                  <div className="flex shrink-0 items-center gap-2">
+                    {actions}
+                    {isCreator ? (
+                      <Badge variant="secondary">Creador</Badge>
+                    ) : null}
+                  </div>
                 ) : null}
               </CardContent>
             </Card>

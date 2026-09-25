@@ -146,7 +146,7 @@ Objetivo: CRUD de plan en Activo, miembros amigos/fantasmas, transiciones de fas
   Criterio: UI “Invitado”; conflicto de nombre (case-insensitive) rechazado.
   Rules: `.cursor/rules/expenses.mdc` · `.cursor/rules/plan-permissions.mdc` · `data-model.md`
 
-- [ ] UserPlus entre co-miembros registrados no amigos
+- [x] UserPlus entre co-miembros registrados no amigos
   Criterio: dispara el mismo flujo de solicitud; fantasmas sin ícono.
   Rules: `.cursor/rules/friends.mdc`
 

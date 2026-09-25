@@ -5,6 +5,11 @@ export interface ISendFriendRequestInput {
   query: string;
 }
 
+export interface ISendFriendRequestByUserIdInput {
+  fromUserId: string;
+  toUserId: string;
+}
+
 export interface ISendFriendRequestResult {
   request: FriendRequest;
   toEmail: string;

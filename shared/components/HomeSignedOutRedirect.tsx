@@ -24,5 +24,5 @@ export function HomeSignedOutRedirect(): ReactElement {
     void redirectToSignIn();
   }, [isLoaded, isSignedIn, redirectToSignIn, router]);
 
-  return <Loading label="Entrando…" />;
+  return <Loading label="Cargando…" />;
 }

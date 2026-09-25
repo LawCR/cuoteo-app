@@ -1,6 +1,7 @@
 import type { FriendRequestStatus } from "@/generated/prisma/client";
 
 export interface IFriendRequestPeer {
+  id: string;
   name: string;
   username: string;
   email: string;

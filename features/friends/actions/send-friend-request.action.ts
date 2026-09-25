@@ -7,13 +7,21 @@ import { ConflictError } from "@/core/errors/conflict.error";
 import { ExternalServiceError } from "@/core/errors/external-service.error";
 import { NotFoundError } from "@/core/errors/not-found.error";
 import { ValidationError } from "@/core/errors/validation.error";
-import type { TSendFriendRequestActionState } from "@/features/friends/interfaces/send-friend-request.interface";
+import type {
+  ISendFriendRequestResult,
+  TSendFriendRequestActionState,
+} from "@/features/friends/interfaces/send-friend-request.interface";
+import { friendUserIdSchema } from "@/features/friends/schemas/friend-user-id.schema";
 import {
   sendFriendRequestSchema,
   type TSendFriendRequestFormData,
 } from "@/features/friends/schemas/send-friend-request.schema";
 import { sendFriendRequestReceivedEmail } from "@/features/friends/services/server/friend-request-email-service.server";
-import { sendFriendRequest } from "@/features/friends/services/server/friend-request-service.server";
+import {
+  sendFriendRequest,
+  sendFriendRequestByUserId,
+} from "@/features/friends/services/server/friend-request-service.server";
+import type { User } from "@/generated/prisma/client";
 
 function conflictMessage(reason: string): string {
   if (reason === "already_friends") {
@@ -27,24 +35,13 @@ function conflictMessage(reason: string): string {
   return "No se pudo enviar la solicitud.";
 }
 
-export async function sendFriendRequestAction(
-  input: TSendFriendRequestFormData,
+async function completeSendFriendRequest(
+  fromUser: User,
+  send: () => Promise<ISendFriendRequestResult>,
+  notFoundMessage: string,
 ): Promise<TSendFriendRequestActionState> {
-  const fromUser = await requireAppUser();
-  const parsed = sendFriendRequestSchema.safeParse(input);
-
-  if (!parsed.success) {
-    return {
-      error: "Escribe un usuario o correo exacto.",
-      success: false,
-    };
-  }
-
   try {
-    const result = await sendFriendRequest({
-      fromUserId: fromUser.id,
-      query: parsed.data.query,
-    });
+    const result = await send();
 
     try {
       await sendFriendRequestReceivedEmail({
@@ -61,10 +58,7 @@ export async function sendFriendRequestAction(
     }
   } catch (error: unknown) {
     if (error instanceof NotFoundError) {
-      return {
-        error: "No encontramos a nadie con ese usuario o correo.",
-        success: false,
-      };
+      return { error: notFoundMessage, success: false };
     }
 
     if (error instanceof ValidationError) {
@@ -90,5 +84,51 @@ export async function sendFriendRequestAction(
 
   revalidatePath("/amigos");
   revalidatePath("/amigos/solicitudes");
+  revalidatePath("/planes", "layout");
   return { error: null, success: true };
+}
+
+export async function sendFriendRequestAction(
+  input: TSendFriendRequestFormData,
+): Promise<TSendFriendRequestActionState> {
+  const fromUser = await requireAppUser();
+  const parsed = sendFriendRequestSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      error: "Escribe un usuario o correo exacto.",
+      success: false,
+    };
+  }
+
+  return completeSendFriendRequest(
+    fromUser,
+    () =>
+      sendFriendRequest({
+        fromUserId: fromUser.id,
+        query: parsed.data.query,
+      }),
+    "No encontramos a nadie con ese usuario o correo.",
+  );
+}
+
+export async function sendFriendRequestToUserAction(
+  friendUserId: string,
+): Promise<TSendFriendRequestActionState> {
+  const fromUser = await requireAppUser();
+  const parsed = friendUserIdSchema.safeParse({ friendUserId });
+
+  if (!parsed.success) {
+    return { error: "No encontramos a esa persona.", success: false };
+  }
+
+  return completeSendFriendRequest(
+    fromUser,
+    () =>
+      sendFriendRequestByUserId({
+        fromUserId: fromUser.id,
+        toUserId: parsed.data.friendUserId,
+      }),
+    "No encontramos a esa persona.",
+  );
 }

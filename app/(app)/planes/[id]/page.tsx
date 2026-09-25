@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import type { ReactElement } from "react";
 import { requireAppUser } from "@/core/auth/app-user.utils";
 import { NotFoundError } from "@/core/errors/not-found.error";
+import { SendFriendRequestButton } from "@/features/friends/components/SendFriendRequestButton";
+import { listFriendRequests } from "@/features/friends/services/server/friend-request-service.server";
 import { listFriends } from "@/features/friends/services/server/friendship-service.server";
 import { AddFriendToPlanForm } from "@/features/plans/components/AddFriendToPlanForm";
 import { AddGhostToPlanForm } from "@/features/plans/components/AddGhostToPlanForm";
@@ -10,7 +12,7 @@ import { PlanMemberList } from "@/features/plans/components/PlanMemberList";
 import { PlanMetadataForm } from "@/features/plans/components/PlanMetadataForm";
 import { PlanPhaseBadge } from "@/features/plans/components/PlanPhaseBadge";
 import { getPlanForUser } from "@/features/plans/services/server/plan-service.server";
-import { PlanPhase } from "@/generated/prisma/enums";
+import { FriendRequestStatus, PlanPhase } from "@/generated/prisma/enums";
 import {
   Card,
   CardContent,
@@ -42,7 +44,16 @@ export default async function PlanDetailPage({
     throw error;
   }
 
-  const friends = await listFriends(user.id);
+  const [friends, inbox] = await Promise.all([
+    listFriends(user.id),
+    listFriendRequests(user.id),
+  ]);
+  const friendIds = new Set(friends.map((item) => item.friend.id));
+  const pendingPeerIds = new Set(
+    [...inbox.received, ...inbox.sent]
+      .filter((item) => item.status === FriendRequestStatus.PENDING)
+      .map((item) => item.peer.id),
+  );
   const memberUserIds = new Set(
     plan.members
       .map((member) => member.userId)
@@ -55,6 +66,30 @@ export default async function PlanDetailPage({
       name: item.friend.name,
       username: item.friend.username,
     }));
+  const memberActions = Object.fromEntries(
+    plan.members.flatMap((member) => {
+      if (
+        !member.userId ||
+        !member.user ||
+        member.userId === user.id ||
+        friendIds.has(member.userId) ||
+        pendingPeerIds.has(member.userId)
+      ) {
+        return [];
+      }
+
+      return [
+        [
+          member.id,
+          <SendFriendRequestButton
+            key={member.id}
+            friendUserId={member.user.id}
+            friendName={member.user.name}
+          />,
+        ],
+      ];
+    }),
+  );
 
   const canEdit = plan.phase === PlanPhase.ACTIVE;
   const isCreator = plan.creatorUserId === user.id;
@@ -109,6 +144,7 @@ export default async function PlanDetailPage({
           <PlanMemberList
             members={plan.members}
             creatorUserId={plan.creatorUserId}
+            memberActions={memberActions}
           />
           {canEdit ? (
             <>

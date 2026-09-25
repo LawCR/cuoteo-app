@@ -4,6 +4,7 @@ import { NotFoundError } from "@/core/errors/not-found.error";
 import { UnauthorizedError } from "@/core/errors/unauthorized.error";
 import { ValidationError } from "@/core/errors/validation.error";
 import type {
+  ISendFriendRequestByUserIdInput,
   ISendFriendRequestInput,
   ISendFriendRequestResult,
 } from "@/features/friends/interfaces/send-friend-request.interface";
@@ -26,6 +27,7 @@ import {
 } from "@/generated/prisma/client";
 
 const PEER_SELECT = {
+  id: true,
   name: true,
   username: true,
   email: true,
@@ -45,20 +47,15 @@ async function findUserByLookup(query: string): Promise<User | null> {
   });
 }
 
-export async function sendFriendRequest(
-  input: ISendFriendRequestInput,
+async function sendFriendRequestToUser(
+  fromUserId: string,
+  toUser: User,
 ): Promise<ISendFriendRequestResult> {
-  const toUser = await findUserByLookup(input.query);
-
-  if (!toUser) {
-    throw new NotFoundError("user_not_found", { field: "query" });
-  }
-
-  if (toUser.id === input.fromUserId) {
+  if (toUser.id === fromUserId) {
     throw new ValidationError("cannot_friend_self", { field: "query" });
   }
 
-  const { userLowId, userHighId } = orderedUserPair(input.fromUserId, toUser.id);
+  const { userLowId, userHighId } = orderedUserPair(fromUserId, toUser.id);
 
   const friendship = await prisma.friendship.findUnique({
     where: { userLowId_userHighId: { userLowId, userHighId } },
@@ -72,8 +69,8 @@ export async function sendFriendRequest(
     where: {
       status: FriendRequestStatus.PENDING,
       OR: [
-        { fromUserId: input.fromUserId, toUserId: toUser.id },
-        { fromUserId: toUser.id, toUserId: input.fromUserId },
+        { fromUserId, toUserId: toUser.id },
+        { fromUserId: toUser.id, toUserId: fromUserId },
       ],
     },
   });
@@ -85,7 +82,7 @@ export async function sendFriendRequest(
   const existing = await prisma.friendRequest.findUnique({
     where: {
       fromUserId_toUserId: {
-        fromUserId: input.fromUserId,
+        fromUserId,
         toUserId: toUser.id,
       },
     },
@@ -99,7 +96,7 @@ export async function sendFriendRequest(
         })
       : await prisma.friendRequest.create({
           data: {
-            fromUserId: input.fromUserId,
+            fromUserId,
             toUserId: toUser.id,
             status: FriendRequestStatus.PENDING,
           },
@@ -116,6 +113,32 @@ export async function sendFriendRequest(
 
     throw error;
   }
+}
+
+export async function sendFriendRequest(
+  input: ISendFriendRequestInput,
+): Promise<ISendFriendRequestResult> {
+  const toUser = await findUserByLookup(input.query);
+
+  if (!toUser) {
+    throw new NotFoundError("user_not_found", { field: "query" });
+  }
+
+  return sendFriendRequestToUser(input.fromUserId, toUser);
+}
+
+export async function sendFriendRequestByUserId(
+  input: ISendFriendRequestByUserIdInput,
+): Promise<ISendFriendRequestResult> {
+  const toUser = await prisma.user.findUnique({
+    where: { id: input.toUserId },
+  });
+
+  if (!toUser) {
+    throw new NotFoundError("user_not_found", { field: "toUserId" });
+  }
+
+  return sendFriendRequestToUser(input.fromUserId, toUser);
 }
 
 function toListItem(
