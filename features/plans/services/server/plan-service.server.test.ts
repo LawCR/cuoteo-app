@@ -7,6 +7,7 @@ import { PlanPhase } from "@/generated/prisma/client";
 const mocks = vi.hoisted(() => ({
   planFindFirst: vi.fn(),
   planUpdate: vi.fn(),
+  planDelete: vi.fn(),
   planMemberFindUnique: vi.fn(),
   planMemberFindFirst: vi.fn(),
   planMemberDelete: vi.fn(),
@@ -18,6 +19,7 @@ vi.mock("@/core/db", () => ({
     plan: {
       findFirst: mocks.planFindFirst,
       update: mocks.planUpdate,
+      delete: mocks.planDelete,
     },
     planMember: {
       findUnique: mocks.planMemberFindUnique,
@@ -29,7 +31,9 @@ vi.mock("@/core/db", () => ({
 }));
 
 import {
+  deletePlan,
   leavePlan,
+  movePlanToActive,
   movePlanToBalance,
   removePlanMember,
 } from "@/features/plans/services/server/plan-service.server";
@@ -84,6 +88,15 @@ describe("leavePlan", () => {
 
   it("rechaza si el plan no está activo", async () => {
     mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.BALANCE));
+
+    await expect(
+      leavePlan({ actorUserId: MEMBER_USER_ID, planId: PLAN_ID }),
+    ).rejects.toBeInstanceOf(ValidationError);
+    expect(mocks.planMemberDelete).not.toHaveBeenCalled();
+  });
+
+  it("rechaza mutaciones en Completado", async () => {
+    mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.COMPLETED));
 
     await expect(
       leavePlan({ actorUserId: MEMBER_USER_ID, planId: PLAN_ID }),
@@ -244,5 +257,99 @@ describe("movePlanToBalance", () => {
         planId: PLAN_ID,
       }),
     ).rejects.toBeInstanceOf(NotFoundError);
+  });
+});
+
+describe("movePlanToActive", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.BALANCE));
+    mocks.planUpdate.mockResolvedValue(makePlan(PlanPhase.ACTIVE));
+  });
+
+  it("vuelve a Activo desde Balance sin pagos", async () => {
+    const result = await movePlanToActive({
+      actorUserId: MEMBER_USER_ID,
+      planId: PLAN_ID,
+    });
+
+    expect(mocks.planUpdate).toHaveBeenCalledWith({
+      where: { id: PLAN_ID },
+      data: { phase: PlanPhase.ACTIVE },
+    });
+    expect(result.phase).toBe(PlanPhase.ACTIVE);
+  });
+
+  it("bloquea si el plan está activo", async () => {
+    mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.ACTIVE));
+
+    await expect(
+      movePlanToActive({
+        actorUserId: MEMBER_USER_ID,
+        planId: PLAN_ID,
+      }),
+    ).rejects.toMatchObject({ message: "plan_not_in_balance" });
+    expect(mocks.planUpdate).not.toHaveBeenCalled();
+  });
+
+  it("bloquea Completado", async () => {
+    mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.COMPLETED));
+
+    await expect(
+      movePlanToActive({
+        actorUserId: MEMBER_USER_ID,
+        planId: PLAN_ID,
+      }),
+    ).rejects.toBeInstanceOf(ValidationError);
+    expect(mocks.planUpdate).not.toHaveBeenCalled();
+  });
+
+  it("rechaza si el actor no pertenece al plan", async () => {
+    mocks.planFindFirst.mockResolvedValue(null);
+
+    await expect(
+      movePlanToActive({
+        actorUserId: MEMBER_USER_ID,
+        planId: PLAN_ID,
+      }),
+    ).rejects.toBeInstanceOf(NotFoundError);
+  });
+});
+
+describe("deletePlan", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.planDelete.mockResolvedValue({});
+  });
+
+  it.each([PlanPhase.ACTIVE, PlanPhase.BALANCE, PlanPhase.COMPLETED])(
+    "permite al creador borrar en fase %s",
+    async (phase) => {
+      mocks.planFindFirst.mockResolvedValue(makePlan(phase));
+
+      await deletePlan({ actorUserId: CREATOR_ID, planId: PLAN_ID });
+
+      expect(mocks.planDelete).toHaveBeenCalledWith({
+        where: { id: PLAN_ID },
+      });
+    },
+  );
+
+  it("impide a un integrante que no es creador", async () => {
+    mocks.planFindFirst.mockResolvedValue(makePlan());
+
+    await expect(
+      deletePlan({ actorUserId: MEMBER_USER_ID, planId: PLAN_ID }),
+    ).rejects.toBeInstanceOf(UnauthorizedError);
+    expect(mocks.planDelete).not.toHaveBeenCalled();
+  });
+
+  it("rechaza si el actor no pertenece al plan", async () => {
+    mocks.planFindFirst.mockResolvedValue(null);
+
+    await expect(
+      deletePlan({ actorUserId: CREATOR_ID, planId: PLAN_ID }),
+    ).rejects.toBeInstanceOf(NotFoundError);
+    expect(mocks.planDelete).not.toHaveBeenCalled();
   });
 });

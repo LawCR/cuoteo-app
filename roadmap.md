@@ -158,11 +158,11 @@ Objetivo: CRUD de plan en Activo, miembros amigos/fantasmas, transiciones de fas
   Criterio: cualquier registrado; bloqueado con < 2 miembros; modal: no se editarán gastos ni integrantes hasta volver.
   Rules: `.cursor/rules/plan-permissions.mdc`
 
-- [ ] Volver a Activo con 0 pagos y Completado readonly (cáscara)
+- [x] Volver a Activo con 0 pagos y Completado readonly (cáscara)
   Criterio: 0 pagos → cualquiera; Completado no muta. Wipe de pagos y Completar plan se cierran en Fase 7.
   Rules: `.cursor/rules/plan-permissions.mdc`
 
-- [ ] Borrar plan en cascada (creador, cualquier fase)
+- [x] Borrar plan en cascada (creador, cualquier fase)
   Criterio: desaparecen members y el plan; acción en `/planes`.
   Rules: `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/app-routing.mdc` · `.cursor/rules/prisma.mdc`
 

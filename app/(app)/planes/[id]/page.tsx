@@ -9,6 +9,7 @@ import { listFriends } from "@/features/friends/services/server/friendship-servi
 import { AddFriendToPlanForm } from "@/features/plans/components/AddFriendToPlanForm";
 import { AddGhostToPlanForm } from "@/features/plans/components/AddGhostToPlanForm";
 import { LeavePlanButton } from "@/features/plans/components/LeavePlanButton";
+import { MovePlanToActiveButton } from "@/features/plans/components/MovePlanToActiveButton";
 import { MovePlanToBalanceButton } from "@/features/plans/components/MovePlanToBalanceButton";
 import { PlanMemberList } from "@/features/plans/components/PlanMemberList";
 import { PlanMetadataForm } from "@/features/plans/components/PlanMetadataForm";
@@ -70,6 +71,8 @@ export default async function PlanDetailPage({
       username: item.friend.username,
     }));
   const canEdit = plan.phase === PlanPhase.ACTIVE;
+  const isBalance = plan.phase === PlanPhase.BALANCE;
+  const isCompleted = plan.phase === PlanPhase.COMPLETED;
   const isCreator = plan.creatorUserId === user.id;
   const memberActions = Object.fromEntries(
     plan.members.flatMap((member) => {
@@ -146,15 +149,28 @@ export default async function PlanDetailPage({
             />
           </div>
         ) : null}
+        {isBalance ? (
+          <MovePlanToActiveButton
+            planId={plan.id}
+            paymentCount={plan.paymentCount}
+          />
+        ) : null}
+        {isCompleted ? (
+          <p className="text-sm text-muted-foreground">
+            Este plan está completado y no se puede modificar.
+          </p>
+        ) : null}
       </div>
 
       <Card className="max-w-4xl">
         <CardHeader>
           <CardTitle>Nombre e ícono</CardTitle>
           <CardDescription>
-            {canEdit
-              ? "Puedes cambiar el nombre y el ícono mientras el plan esté activo."
-              : "El nombre y el ícono se pueden cambiar solo cuando el plan está activo."}
+            {isCompleted
+              ? "Este plan está completado. No se puede modificar."
+              : canEdit
+                ? "Puedes cambiar el nombre y el ícono mientras el plan esté activo."
+                : "El nombre y el ícono se pueden cambiar solo cuando el plan está activo."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -197,7 +213,9 @@ export default async function PlanDetailPage({
             </>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Los integrantes se pueden cambiar solo cuando el plan está activo.
+              {isCompleted
+                ? "Este plan está completado. Los integrantes no se pueden cambiar."
+                : "Los integrantes se pueden cambiar solo cuando el plan está activo."}
             </p>
           )}
         </CardContent>

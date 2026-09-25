@@ -7,7 +7,9 @@ import type {
   IAddFriendToPlanInput,
   IAddGhostToPlanInput,
   ICreatePlanInput,
+  IDeletePlanInput,
   ILeavePlanInput,
+  IMovePlanToActiveInput,
   IMovePlanToBalanceInput,
   IPlanDetail,
   IPlanMemberItem,
@@ -17,10 +19,14 @@ import type {
 } from "@/features/plans/interfaces/plan.interface";
 import { normalizeGhostName } from "@/features/plans/utils/ghost-name.utils";
 import {
+  getDeletePlanDenial,
   getLeavePlanDenial,
   getRemoveMemberDenial,
 } from "@/features/plans/utils/plan-membership-rules.utils";
-import { getMovePlanToBalanceDenial } from "@/features/plans/utils/plan-phase-rules.utils";
+import {
+  getMovePlanToActiveDenial,
+  getMovePlanToBalanceDenial,
+} from "@/features/plans/utils/plan-phase-rules.utils";
 import {
   PlanPhase,
   Prisma,
@@ -70,11 +76,19 @@ function toPlanMemberItem(
   };
 }
 
-function toPlanDetail(plan: TPlanDetailRecord): IPlanDetail {
+function toPlanDetail(
+  plan: TPlanDetailRecord,
+  paymentCount: number,
+): IPlanDetail {
   return {
     ...toPlanSummary(plan),
     members: plan.members.map(toPlanMemberItem),
+    paymentCount,
   };
+}
+
+async function countPaymentsForPlan(_planId: string): Promise<number> {
+  return 0;
 }
 
 async function findAccessiblePlan(
@@ -150,7 +164,8 @@ export async function getPlanForUser(
   userId: string,
 ): Promise<IPlanDetail> {
   const plan = await findAccessiblePlanDetail(planId, userId);
-  return toPlanDetail(plan);
+  const paymentCount = await countPaymentsForPlan(plan.id);
+  return toPlanDetail(plan, paymentCount);
 }
 
 export async function createPlan(
@@ -369,4 +384,41 @@ export async function movePlanToBalance(
   });
 
   return toPlanSummary(updated);
+}
+
+export async function movePlanToActive(
+  input: IMovePlanToActiveInput,
+): Promise<IPlanSummary> {
+  const plan = await findAccessiblePlan(input.planId, input.actorUserId);
+  const paymentCount = await countPaymentsForPlan(plan.id);
+  const denial = getMovePlanToActiveDenial({
+    phase: plan.phase,
+    paymentCount,
+  });
+
+  if (denial === "plan_not_in_balance") {
+    throw new ValidationError("plan_not_in_balance", { field: "planId" });
+  }
+
+  if (denial === "has_payments") {
+    throw new ValidationError("has_payments", { field: "planId" });
+  }
+
+  const updated = await prisma.plan.update({
+    where: { id: plan.id },
+    data: { phase: PlanPhase.ACTIVE },
+  });
+
+  return toPlanSummary(updated);
+}
+
+export async function deletePlan(input: IDeletePlanInput): Promise<void> {
+  const plan = await findAccessiblePlan(input.planId, input.actorUserId);
+  const denial = getDeletePlanDenial(input.actorUserId, plan.creatorUserId);
+
+  if (denial === "not_plan_creator") {
+    throw new UnauthorizedError("not_plan_creator", { field: "planId" });
+  }
+
+  await prisma.plan.delete({ where: { id: plan.id } });
 }

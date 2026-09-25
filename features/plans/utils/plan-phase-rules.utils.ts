@@ -5,6 +5,10 @@ export type TMovePlanToBalanceDenial =
   | "plan_not_active"
   | "not_enough_members";
 
+export type TMovePlanToActiveDenial =
+  | "plan_not_in_balance"
+  | "has_payments";
+
 export function getMovePlanToBalanceDenial(input: {
   phase: PlanPhase;
   memberCount: number;
@@ -15,6 +19,21 @@ export function getMovePlanToBalanceDenial(input: {
 
   if (input.memberCount < MIN_MEMBERS_TO_ENTER_BALANCE) {
     return "not_enough_members";
+  }
+
+  return null;
+}
+
+export function getMovePlanToActiveDenial(input: {
+  phase: PlanPhase;
+  paymentCount: number;
+}): TMovePlanToActiveDenial | null {
+  if (input.phase !== PlanPhase.BALANCE) {
+    return "plan_not_in_balance";
+  }
+
+  if (input.paymentCount > 0) {
+    return "has_payments";
   }
 
   return null;

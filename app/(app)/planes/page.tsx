@@ -22,7 +22,7 @@ export default async function PlansPage(): Promise<ReactElement> {
         </Button>
       </div>
 
-      <PlanList plans={plans} />
+      <PlanList plans={plans} currentUserId={user.id} />
     </main>
   );
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  getDeletePlanDenial,
   getLeavePlanDenial,
   getRemoveMemberDenial,
 } from "@/features/plans/utils/plan-membership-rules.utils";
@@ -69,5 +70,15 @@ describe("getRemoveMemberDenial", () => {
         targetUserId: null,
       }),
     ).toBeNull();
+  });
+});
+
+describe("getDeletePlanDenial", () => {
+  it("permite al creador", () => {
+    expect(getDeletePlanDenial(CREATOR_ID, CREATOR_ID)).toBeNull();
+  });
+
+  it("bloquea a un integrante que no es creador", () => {
+    expect(getDeletePlanDenial(MEMBER_ID, CREATOR_ID)).toBe("not_plan_creator");
   });
 });

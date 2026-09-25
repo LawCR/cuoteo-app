@@ -4,9 +4,13 @@ import type { IPlanSummary } from "@/features/plans/interfaces/plan.interface";
 
 interface IPlanListProps {
   plans: IPlanSummary[];
+  currentUserId: string;
 }
 
-export function PlanList({ plans }: IPlanListProps): ReactElement {
+export function PlanList({
+  plans,
+  currentUserId,
+}: IPlanListProps): ReactElement {
   if (plans.length === 0) {
     return (
       <p className="text-muted-foreground">
@@ -19,7 +23,7 @@ export function PlanList({ plans }: IPlanListProps): ReactElement {
     <ul className="flex flex-col gap-3">
       {plans.map((plan) => (
         <li key={plan.id}>
-          <PlanCard plan={plan} />
+          <PlanCard plan={plan} currentUserId={currentUserId} />
         </li>
       ))}
     </ul>

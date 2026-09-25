@@ -29,6 +29,7 @@ export interface IPlanMemberItem {
 
 export interface IPlanDetail extends IPlanSummary {
   members: IPlanMemberItem[];
+  paymentCount: number;
 }
 
 export interface IUpdatePlanMetadataInput {
@@ -62,6 +63,16 @@ export interface IRemovePlanMemberInput {
 }
 
 export interface IMovePlanToBalanceInput {
+  actorUserId: string;
+  planId: string;
+}
+
+export interface IMovePlanToActiveInput {
+  actorUserId: string;
+  planId: string;
+}
+
+export interface IDeletePlanInput {
   actorUserId: string;
   planId: string;
 }
@@ -102,6 +113,16 @@ export type TRemovePlanMemberActionState = {
 };
 
 export type TMovePlanToBalanceActionState = {
+  error: string | null;
+  success: boolean;
+};
+
+export type TMovePlanToActiveActionState = {
+  error: string | null;
+  success: boolean;
+};
+
+export type TDeletePlanActionState = {
   error: string | null;
   success: boolean;
 };
