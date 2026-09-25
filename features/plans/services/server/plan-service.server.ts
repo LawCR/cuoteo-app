@@ -3,6 +3,7 @@ import { ConflictError } from "@/core/errors/conflict.error";
 import { NotFoundError } from "@/core/errors/not-found.error";
 import { UnauthorizedError } from "@/core/errors/unauthorized.error";
 import { ValidationError } from "@/core/errors/validation.error";
+import { includeMemberInPastExpenses } from "@/features/expenses/services/server/expense-service.server";
 import type {
   IAddFriendToPlanInput,
   IAddGhostToPlanInput,
@@ -146,6 +147,38 @@ function assertPlanIsActive(phase: Plan["phase"]): void {
   }
 }
 
+async function createPlanMemberAndMaybeIncludePastExpenses(input: {
+  planId: string;
+  userId?: string;
+  ghostName?: string;
+  ghostNameNormalized?: string;
+  includeInPastExpenses: boolean;
+}): Promise<void> {
+  const memberData = {
+    planId: input.planId,
+    ...(input.userId ? { userId: input.userId } : {}),
+    ...(input.ghostName
+      ? {
+          ghostName: input.ghostName,
+          ghostNameNormalized: input.ghostNameNormalized,
+        }
+      : {}),
+  };
+
+  if (!input.includeInPastExpenses) {
+    await prisma.planMember.create({ data: memberData });
+    return;
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const member = await tx.planMember.create({ data: memberData });
+    await includeMemberInPastExpenses(tx, {
+      planId: input.planId,
+      memberId: member.id,
+    });
+  });
+}
+
 export async function listPlansForUser(
   userId: string,
 ): Promise<IPlanSummary[]> {
@@ -246,11 +279,10 @@ export async function addFriendToPlan(
     throw new ValidationError("not_friends", { field: "friendUserId" });
   }
 
-  await prisma.planMember.create({
-    data: {
-      planId: plan.id,
-      userId: input.friendUserId,
-    },
+  await createPlanMemberAndMaybeIncludePastExpenses({
+    planId: plan.id,
+    userId: input.friendUserId,
+    includeInPastExpenses: input.includeInPastExpenses,
   });
 }
 
@@ -277,12 +309,11 @@ export async function addGhostToPlan(
   }
 
   try {
-    await prisma.planMember.create({
-      data: {
-        planId: plan.id,
-        ghostName,
-        ghostNameNormalized,
-      },
+    await createPlanMemberAndMaybeIncludePastExpenses({
+      planId: plan.id,
+      ghostName,
+      ghostNameNormalized,
+      includeInPastExpenses: input.includeInPastExpenses,
     });
   } catch (error: unknown) {
     if (

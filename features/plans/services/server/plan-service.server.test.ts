@@ -10,8 +10,16 @@ const mocks = vi.hoisted(() => ({
   planDelete: vi.fn(),
   planMemberFindUnique: vi.fn(),
   planMemberFindFirst: vi.fn(),
+  planMemberCreate: vi.fn(),
   planMemberDelete: vi.fn(),
   planMemberCount: vi.fn(),
+  friendshipFindUnique: vi.fn(),
+  includeMemberInPastExpenses: vi.fn(),
+  transaction: vi.fn(),
+}));
+
+vi.mock("@/features/expenses/services/server/expense-service.server", () => ({
+  includeMemberInPastExpenses: mocks.includeMemberInPastExpenses,
 }));
 
 vi.mock("@/core/db", () => ({
@@ -24,13 +32,20 @@ vi.mock("@/core/db", () => ({
     planMember: {
       findUnique: mocks.planMemberFindUnique,
       findFirst: mocks.planMemberFindFirst,
+      create: mocks.planMemberCreate,
       delete: mocks.planMemberDelete,
       count: mocks.planMemberCount,
     },
+    friendship: {
+      findUnique: mocks.friendshipFindUnique,
+    },
+    $transaction: mocks.transaction,
   },
 }));
 
 import {
+  addFriendToPlan,
+  addGhostToPlan,
   deletePlan,
   leavePlan,
   movePlanToActive,
@@ -351,5 +366,116 @@ describe("deletePlan", () => {
       deletePlan({ actorUserId: CREATOR_ID, planId: PLAN_ID }),
     ).rejects.toBeInstanceOf(NotFoundError);
     expect(mocks.planDelete).not.toHaveBeenCalled();
+  });
+});
+
+describe("addFriendToPlan", () => {
+  const FRIEND_USER_ID = "friend-1";
+  const NEW_MEMBER_ID = "pm-new-friend";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.planFindFirst.mockResolvedValue(makePlan());
+    mocks.planMemberFindUnique.mockResolvedValue(null);
+    mocks.friendshipFindUnique.mockResolvedValue({ id: "friendship-1" });
+    mocks.planMemberCreate.mockResolvedValue({ id: NEW_MEMBER_ID });
+    mocks.includeMemberInPastExpenses.mockResolvedValue(undefined);
+    mocks.transaction.mockImplementation(
+      async (callback: (tx: unknown) => unknown) =>
+        callback({
+          planMember: { create: mocks.planMemberCreate },
+        }),
+    );
+  });
+
+  it("opción A crea el integrante y no toca gastos", async () => {
+    await addFriendToPlan({
+      actorUserId: CREATOR_ID,
+      planId: PLAN_ID,
+      friendUserId: FRIEND_USER_ID,
+      includeInPastExpenses: false,
+    });
+
+    expect(mocks.planMemberCreate).toHaveBeenCalledWith({
+      data: {
+        planId: PLAN_ID,
+        userId: FRIEND_USER_ID,
+      },
+    });
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.includeMemberInPastExpenses).not.toHaveBeenCalled();
+  });
+
+  it("opción B crea el integrante e incluye gastos pasados en la misma transacción", async () => {
+    await addFriendToPlan({
+      actorUserId: CREATOR_ID,
+      planId: PLAN_ID,
+      friendUserId: FRIEND_USER_ID,
+      includeInPastExpenses: true,
+    });
+
+    expect(mocks.transaction).toHaveBeenCalled();
+    expect(mocks.planMemberCreate).toHaveBeenCalledWith({
+      data: {
+        planId: PLAN_ID,
+        userId: FRIEND_USER_ID,
+      },
+    });
+    expect(mocks.includeMemberInPastExpenses).toHaveBeenCalledWith(
+      expect.objectContaining({
+        planMember: { create: mocks.planMemberCreate },
+      }),
+      { planId: PLAN_ID, memberId: NEW_MEMBER_ID },
+    );
+  });
+});
+
+describe("addGhostToPlan", () => {
+  const NEW_GHOST_ID = "pm-new-ghost";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.planFindFirst.mockResolvedValue(makePlan());
+    mocks.planMemberFindUnique.mockResolvedValue(null);
+    mocks.planMemberCreate.mockResolvedValue({ id: NEW_GHOST_ID });
+    mocks.includeMemberInPastExpenses.mockResolvedValue(undefined);
+    mocks.transaction.mockImplementation(
+      async (callback: (tx: unknown) => unknown) =>
+        callback({
+          planMember: { create: mocks.planMemberCreate },
+        }),
+    );
+  });
+
+  it("opción A crea el invitado y no toca gastos", async () => {
+    await addGhostToPlan({
+      actorUserId: CREATOR_ID,
+      planId: PLAN_ID,
+      ghostName: "Carla",
+      includeInPastExpenses: false,
+    });
+
+    expect(mocks.planMemberCreate).toHaveBeenCalledWith({
+      data: {
+        planId: PLAN_ID,
+        ghostName: "Carla",
+        ghostNameNormalized: "carla",
+      },
+    });
+    expect(mocks.includeMemberInPastExpenses).not.toHaveBeenCalled();
+  });
+
+  it("opción B incluye al invitado en los gastos pasados", async () => {
+    await addGhostToPlan({
+      actorUserId: CREATOR_ID,
+      planId: PLAN_ID,
+      ghostName: "Carla",
+      includeInPastExpenses: true,
+    });
+
+    expect(mocks.includeMemberInPastExpenses).toHaveBeenCalledWith(
+      expect.anything(),
+      { planId: PLAN_ID, memberId: NEW_GHOST_ID },
+    );
   });
 });

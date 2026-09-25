@@ -43,12 +43,14 @@ export interface IAddFriendToPlanInput {
   actorUserId: string;
   planId: string;
   friendUserId: string;
+  includeInPastExpenses: boolean;
 }
 
 export interface IAddGhostToPlanInput {
   actorUserId: string;
   planId: string;
   ghostName: string;
+  includeInPastExpenses: boolean;
 }
 
 export interface ILeavePlanInput {

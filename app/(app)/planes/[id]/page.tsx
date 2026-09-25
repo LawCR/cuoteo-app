@@ -222,11 +222,15 @@ export default async function PlanDetailPage({
                 <AddFriendToPlanForm
                   planId={plan.id}
                   friends={eligibleFriends}
+                  hasExpenses={expenses.length > 0}
                 />
               </div>
               <div className="flex flex-col gap-3">
                 <h2 className="text-base font-medium">Agregar invitado</h2>
-                <AddGhostToPlanForm planId={plan.id} />
+                <AddGhostToPlanForm
+                  planId={plan.id}
+                  hasExpenses={expenses.length > 0}
+                />
               </div>
             </>
           ) : (

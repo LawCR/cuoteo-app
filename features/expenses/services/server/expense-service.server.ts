@@ -5,9 +5,13 @@ import type {
   ICreateExpenseInput,
   IDeleteExpenseInput,
   IExpenseListItem,
+  IIncludeMemberInPastExpensesInput,
   IUpdateExpenseInput,
 } from "@/features/expenses/interfaces/expense.interface";
-import { recalculateEqualExpenseShares } from "@/features/expenses/utils/expense-split.utils";
+import {
+  memberIdsWithLateJoiner,
+  recalculateEqualExpenseShares,
+} from "@/features/expenses/utils/expense-split.utils";
 import {
   getCreateExpenseDenial,
   getMutateExpenseDenial,
@@ -113,6 +117,41 @@ function shareRows(amount: number, shareMemberIds: string[]) {
     memberId: share.memberId,
     shareAmount: new Prisma.Decimal(share.shareAmount.toFixed(2)),
   }));
+}
+
+type TExpenseWriteClient = Pick<typeof prisma, "expense">;
+
+export async function includeMemberInPastExpenses(
+  db: TExpenseWriteClient,
+  input: IIncludeMemberInPastExpensesInput,
+): Promise<void> {
+  const expenses = await db.expense.findMany({
+    where: { planId: input.planId },
+    include: { shares: { select: { memberId: true } } },
+  });
+
+  for (const expense of expenses) {
+    const currentShareMemberIds = expense.shares.map((share) => share.memberId);
+
+    if (currentShareMemberIds.includes(input.memberId)) {
+      continue;
+    }
+
+    const shareMemberIds = memberIdsWithLateJoiner(
+      currentShareMemberIds,
+      input.memberId,
+    );
+
+    await db.expense.update({
+      where: { id: expense.id },
+      data: {
+        shares: {
+          deleteMany: {},
+          create: shareRows(toPenNumber(expense.amount), shareMemberIds),
+        },
+      },
+    });
+  }
 }
 
 export async function listExpensesForPlan(

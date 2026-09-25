@@ -33,9 +33,11 @@ vi.mock("@/core/db", () => ({
   },
 }));
 
+import { prisma } from "@/core/db";
 import {
   createExpense,
   deleteExpense,
+  includeMemberInPastExpenses,
   updateExpense,
 } from "@/features/expenses/services/server/expense-service.server";
 
@@ -337,5 +339,74 @@ describe("deleteExpense", () => {
         expenseId: "expense-1",
       }),
     ).rejects.toBeInstanceOf(ValidationError);
+  });
+});
+
+describe("includeMemberInPastExpenses", () => {
+  const MEMBER_D = "member-d";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("inserta al tardío en todos los gastos, respeta exclusiones y no cambia el pagador", async () => {
+    mocks.expenseFindMany.mockResolvedValue([
+      {
+        id: "expense-full",
+        amount: "90.00",
+        paidByMemberId: MEMBER_A,
+        shares: [{ memberId: MEMBER_A }, { memberId: MEMBER_B }],
+      },
+      {
+        id: "expense-excluded",
+        amount: "10.00",
+        paidByMemberId: MEMBER_B,
+        shares: [{ memberId: MEMBER_A }],
+      },
+    ]);
+
+    await includeMemberInPastExpenses(prisma, {
+      planId: PLAN_ID,
+      memberId: MEMBER_D,
+    });
+
+    expect(mocks.expenseUpdate.mock.calls).toHaveLength(2);
+
+    const fullShares = shareAmountsFromCall(mocks.expenseUpdate.mock.calls[0][0]);
+    expect(mocks.expenseUpdate.mock.calls[0][0].where).toEqual({
+      id: "expense-full",
+    });
+    expect(fullShares).toEqual([
+      { memberId: MEMBER_A, shareAmount: 30 },
+      { memberId: MEMBER_B, shareAmount: 30 },
+      { memberId: MEMBER_D, shareAmount: 30 },
+    ]);
+    expect(mocks.expenseUpdate.mock.calls[0][0].data.paidByMemberId).toBeUndefined();
+
+    const excludedShares = shareAmountsFromCall(
+      mocks.expenseUpdate.mock.calls[1][0],
+    );
+    expect(excludedShares).toEqual([
+      { memberId: MEMBER_A, shareAmount: 5 },
+      { memberId: MEMBER_D, shareAmount: 5 },
+    ]);
+  });
+
+  it("no toca un gasto si el tardío ya participa", async () => {
+    mocks.expenseFindMany.mockResolvedValue([
+      {
+        id: "expense-1",
+        amount: "10.00",
+        paidByMemberId: MEMBER_A,
+        shares: [{ memberId: MEMBER_A }, { memberId: MEMBER_D }],
+      },
+    ]);
+
+    await includeMemberInPastExpenses(prisma, {
+      planId: PLAN_ID,
+      memberId: MEMBER_D,
+    });
+
+    expect(mocks.expenseUpdate).not.toHaveBeenCalled();
   });
 });

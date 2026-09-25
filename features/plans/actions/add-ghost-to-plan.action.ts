@@ -28,6 +28,7 @@ export async function addGhostToPlanAction(
       actorUserId: user.id,
       planId: parsed.data.planId,
       ghostName: parsed.data.ghostName,
+      includeInPastExpenses: parsed.data.includeInPastExpenses,
     });
   } catch (error: unknown) {
     if (error instanceof NotFoundError) {

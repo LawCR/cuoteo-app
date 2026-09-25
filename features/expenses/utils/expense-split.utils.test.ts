@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ValidationError } from "@/core/errors/validation.error";
 import {
+  memberIdsWithLateJoiner,
   recalculateEqualExpenseShares,
   splitEqualExpenseShares,
   sumShareCents,
@@ -74,6 +75,16 @@ describe("splitEqualExpenseShares", () => {
     expect(() => splitEqualExpenseShares(0, ["a"])).toThrow(
       "amount_not_positive",
     );
+  });
+});
+
+describe("memberIdsWithLateJoiner", () => {
+  it("suma al tardío y deja fuera a los ya excluidos", () => {
+    expect(memberIdsWithLateJoiner(["a", "b"], "d")).toEqual(["a", "b", "d"]);
+  });
+
+  it("no duplica si el tardío ya participa", () => {
+    expect(memberIdsWithLateJoiner(["a", "d"], "d")).toEqual(["a", "d"]);
   });
 });
 

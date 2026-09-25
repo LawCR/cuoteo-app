@@ -28,6 +28,7 @@ export async function addFriendToPlanAction(
       actorUserId: user.id,
       planId: parsed.data.planId,
       friendUserId: parsed.data.friendUserId,
+      includeInPastExpenses: parsed.data.includeInPastExpenses,
     });
   } catch (error: unknown) {
     if (error instanceof NotFoundError) {

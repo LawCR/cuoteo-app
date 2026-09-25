@@ -11,6 +11,7 @@ export const addGhostToPlanSchema = z.object({
       GHOST_NAME_MAX_LENGTH,
       `Usa como máximo ${GHOST_NAME_MAX_LENGTH} caracteres.`,
     ),
+  includeInPastExpenses: z.boolean(),
 });
 
 export type TAddGhostToPlanFormData = z.infer<typeof addGhostToPlanSchema>;

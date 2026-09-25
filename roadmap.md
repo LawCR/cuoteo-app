@@ -190,7 +190,7 @@ Objetivo: split igualitario, exclusión, tardío, gráfica; habilita la guarda �
   Criterio: shares coherentes; solo fase Activo.
   Rules: `.cursor/rules/money.mdc` · `.cursor/rules/plan-permissions.mdc`
 
-- [ ] Integrante tardío opciones A y B
+- [x] Integrante tardío opciones A y B
   Criterio: A no toca gastos viejos; B entra en todos (respetando excluidos ajenos) y recalcula.
   Rules: `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/expenses.mdc` · `.cursor/rules/money.mdc`
 

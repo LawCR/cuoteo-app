@@ -74,6 +74,17 @@ export function sumShareCents(shares: readonly IExpenseShareSplit[]): number {
   );
 }
 
+export function memberIdsWithLateJoiner(
+  currentShareMemberIds: readonly string[],
+  lateMemberId: string,
+): string[] {
+  if (currentShareMemberIds.includes(lateMemberId)) {
+    return [...currentShareMemberIds];
+  }
+
+  return [...currentShareMemberIds, lateMemberId];
+}
+
 export function recalculateEqualExpenseShares(
   amount: number,
   memberIds: readonly string[],
