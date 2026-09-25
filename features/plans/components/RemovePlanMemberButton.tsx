@@ -1,10 +1,10 @@
 "use client";
 
-import { UserPlusIcon } from "lucide-react";
+import { UserMinusIcon } from "lucide-react";
 import { useState, useTransition } from "react";
 import type { ReactElement } from "react";
 import { toast } from "sonner";
-import { sendFriendRequestToUserAction } from "@/features/friends/actions/send-friend-request.action";
+import { removePlanMemberAction } from "@/features/plans/actions/remove-plan-member.action";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -17,21 +17,23 @@ import {
 } from "@/shared/components/ui/alert-dialog";
 import { Button } from "@/shared/components/ui/button";
 
-interface ISendFriendRequestButtonProps {
-  friendUserId: string;
-  friendName: string;
+interface IRemovePlanMemberButtonProps {
+  planId: string;
+  memberId: string;
+  memberName: string;
 }
 
-export function SendFriendRequestButton({
-  friendUserId,
-  friendName,
-}: ISendFriendRequestButtonProps): ReactElement {
+export function RemovePlanMemberButton({
+  planId,
+  memberId,
+  memberName,
+}: IRemovePlanMemberButtonProps): ReactElement {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  function confirmSend(): void {
+  function confirmRemove(): void {
     startTransition(async () => {
-      const result = await sendFriendRequestToUserAction(friendUserId);
+      const result = await removePlanMemberAction({ planId, memberId });
 
       if (result.error) {
         toast.error(result.error);
@@ -39,7 +41,7 @@ export function SendFriendRequestButton({
       }
 
       if (result.success) {
-        toast.success("Solicitud enviada");
+        toast.success("Integrante quitado del plan");
         setOpen(false);
       }
     });
@@ -52,29 +54,29 @@ export function SendFriendRequestButton({
           type="button"
           variant="outline"
           size="icon-lg"
-          className="min-h-11 min-w-11"
-          disabled={isPending}
-          aria-label={`Enviar solicitud de amistad a ${friendName}`}
+          className="min-h-11 min-w-11 text-destructive"
+          aria-label={`Quitar a ${memberName} del plan`}
         >
-          <UserPlusIcon />
+          <UserMinusIcon />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Enviar solicitud</AlertDialogTitle>
+          <AlertDialogTitle>Quitar integrante</AlertDialogTitle>
           <AlertDialogDescription>
-            ¿Quieres enviar una solicitud de amistad a {friendName}?
+            ¿Quitar a {memberName} de este plan?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
           <Button
             type="button"
+            variant="destructive"
             className="min-h-11"
             disabled={isPending}
-            onClick={confirmSend}
+            onClick={confirmRemove}
           >
-            {isPending ? "Enviando…" : "Enviar"}
+            {isPending ? "Quitando…" : "Quitar"}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

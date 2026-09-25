@@ -8,9 +8,11 @@ import { listFriendRequests } from "@/features/friends/services/server/friend-re
 import { listFriends } from "@/features/friends/services/server/friendship-service.server";
 import { AddFriendToPlanForm } from "@/features/plans/components/AddFriendToPlanForm";
 import { AddGhostToPlanForm } from "@/features/plans/components/AddGhostToPlanForm";
+import { LeavePlanButton } from "@/features/plans/components/LeavePlanButton";
 import { PlanMemberList } from "@/features/plans/components/PlanMemberList";
 import { PlanMetadataForm } from "@/features/plans/components/PlanMetadataForm";
 import { PlanPhaseBadge } from "@/features/plans/components/PlanPhaseBadge";
+import { RemovePlanMemberButton } from "@/features/plans/components/RemovePlanMemberButton";
 import { getPlanForUser } from "@/features/plans/services/server/plan-service.server";
 import { FriendRequestStatus, PlanPhase } from "@/generated/prisma/enums";
 import {
@@ -66,33 +68,54 @@ export default async function PlanDetailPage({
       name: item.friend.name,
       username: item.friend.username,
     }));
+  const canEdit = plan.phase === PlanPhase.ACTIVE;
+  const isCreator = plan.creatorUserId === user.id;
   const memberActions = Object.fromEntries(
     plan.members.flatMap((member) => {
-      if (
-        !member.userId ||
-        !member.user ||
-        member.userId === user.id ||
-        friendIds.has(member.userId) ||
-        pendingPeerIds.has(member.userId)
-      ) {
+      const isGhost = member.userId === null;
+      const memberName = isGhost
+        ? (member.ghostName ?? "Invitado")
+        : (member.user?.name ?? "Integrante");
+      const canSendFriendRequest = Boolean(
+        member.userId &&
+          member.user &&
+          member.userId !== user.id &&
+          !friendIds.has(member.userId) &&
+          !pendingPeerIds.has(member.userId),
+      );
+      const canRemoveGhost = canEdit && isGhost;
+      const canRemoveRegistered =
+        canEdit &&
+        isCreator &&
+        member.userId !== null &&
+        member.userId !== plan.creatorUserId;
+
+      if (!canSendFriendRequest && !canRemoveGhost && !canRemoveRegistered) {
         return [];
       }
 
       return [
         [
           member.id,
-          <SendFriendRequestButton
-            key={member.id}
-            friendUserId={member.user.id}
-            friendName={member.user.name}
-          />,
+          <div key={member.id} className="flex items-center gap-2">
+            {canSendFriendRequest && member.user ? (
+              <SendFriendRequestButton
+                friendUserId={member.user.id}
+                friendName={member.user.name}
+              />
+            ) : null}
+            {canRemoveGhost || canRemoveRegistered ? (
+              <RemovePlanMemberButton
+                planId={plan.id}
+                memberId={member.id}
+                memberName={memberName}
+              />
+            ) : null}
+          </div>,
         ],
       ];
     }),
   );
-
-  const canEdit = plan.phase === PlanPhase.ACTIVE;
-  const isCreator = plan.creatorUserId === user.id;
 
   return (
     <main className="flex min-h-full flex-1 flex-col gap-6 p-6">
@@ -111,6 +134,9 @@ export default async function PlanDetailPage({
           Creado el {formatLimaDate(plan.createdAt)}
           {isCreator ? " · Eres el creador" : null}
         </p>
+        {canEdit && !isCreator ? (
+          <LeavePlanButton planId={plan.id} planName={plan.name} />
+        ) : null}
       </div>
 
       <Card className="max-w-4xl">

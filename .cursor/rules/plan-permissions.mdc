@@ -19,8 +19,8 @@ alwaysApply: false
 
 # Permisos
 
-- Cualquier registrado miembro (Activo): gastos CRUD, agregar amigos/fantasmas, editar plan, pasar a Balance.
-- Solo creador: quitar miembros, borrar plan (cascade, cualquier fase), Completar pagos/plan, wipe de pagos.
+- Cualquier registrado miembro (Activo): gastos CRUD, agregar amigos/fantasmas, **quitar invitados**, editar plan, pasar a Balance.
+- Solo creador: quitar integrantes registrados, borrar plan (cascade, cualquier fase), Completar pagos/plan, wipe de pagos.
 - Creador **no se sale**. Único registrado = lo mismo: solo eliminar el plan.
 - Registrar/anular pago: cualquier registrado, **solo Balance**.
 

@@ -50,6 +50,17 @@ export interface IAddGhostToPlanInput {
   ghostName: string;
 }
 
+export interface ILeavePlanInput {
+  actorUserId: string;
+  planId: string;
+}
+
+export interface IRemovePlanMemberInput {
+  actorUserId: string;
+  planId: string;
+  memberId: string;
+}
+
 export interface IPlanFriendOption {
   id: string;
   name: string;
@@ -71,6 +82,16 @@ export type TAddFriendToPlanActionState = {
 };
 
 export type TAddGhostToPlanActionState = {
+  error: string | null;
+  success: boolean;
+};
+
+export type TLeavePlanActionState = {
+  error: string | null;
+  success: boolean;
+};
+
+export type TRemovePlanMemberActionState = {
   error: string | null;
   success: boolean;
 };

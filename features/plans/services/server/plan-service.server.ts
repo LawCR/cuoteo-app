@@ -1,17 +1,24 @@
 import { prisma } from "@/core/db";
 import { ConflictError } from "@/core/errors/conflict.error";
 import { NotFoundError } from "@/core/errors/not-found.error";
+import { UnauthorizedError } from "@/core/errors/unauthorized.error";
 import { ValidationError } from "@/core/errors/validation.error";
 import type {
   IAddFriendToPlanInput,
   IAddGhostToPlanInput,
   ICreatePlanInput,
+  ILeavePlanInput,
   IPlanDetail,
   IPlanMemberItem,
   IPlanSummary,
+  IRemovePlanMemberInput,
   IUpdatePlanMetadataInput,
 } from "@/features/plans/interfaces/plan.interface";
 import { normalizeGhostName } from "@/features/plans/utils/ghost-name.utils";
+import {
+  getLeavePlanDenial,
+  getRemoveMemberDenial,
+} from "@/features/plans/utils/plan-membership-rules.utils";
 import {
   PlanPhase,
   Prisma,
@@ -270,4 +277,66 @@ export async function addGhostToPlan(
 
     throw error;
   }
+}
+
+export async function leavePlan(input: ILeavePlanInput): Promise<void> {
+  const plan = await findAccessiblePlan(input.planId, input.actorUserId);
+  assertPlanIsActive(plan.phase);
+
+  const denial = getLeavePlanDenial(input.actorUserId, plan.creatorUserId);
+
+  if (denial === "creator_cannot_leave") {
+    throw new ValidationError("creator_cannot_leave", { field: "planId" });
+  }
+
+  const membership = await prisma.planMember.findUnique({
+    where: {
+      planId_userId: {
+        planId: plan.id,
+        userId: input.actorUserId,
+      },
+    },
+  });
+
+  if (!membership) {
+    throw new NotFoundError("plan_member_not_found", { field: "planId" });
+  }
+
+  await prisma.planMember.delete({ where: { id: membership.id } });
+}
+
+export async function removePlanMember(
+  input: IRemovePlanMemberInput,
+): Promise<void> {
+  const plan = await findAccessiblePlan(input.planId, input.actorUserId);
+  assertPlanIsActive(plan.phase);
+
+  const member = await prisma.planMember.findFirst({
+    where: {
+      id: input.memberId,
+      planId: plan.id,
+    },
+  });
+
+  if (!member) {
+    throw new NotFoundError("plan_member_not_found", { field: "memberId" });
+  }
+
+  const denial = getRemoveMemberDenial({
+    actorUserId: input.actorUserId,
+    creatorUserId: plan.creatorUserId,
+    targetUserId: member.userId,
+  });
+
+  if (denial === "cannot_remove_creator") {
+    throw new ValidationError("cannot_remove_creator", { field: "memberId" });
+  }
+
+  if (denial === "cannot_remove_registered_member") {
+    throw new UnauthorizedError("cannot_remove_registered_member", {
+      field: "memberId",
+    });
+  }
+
+  await prisma.planMember.delete({ where: { id: member.id } });
 }

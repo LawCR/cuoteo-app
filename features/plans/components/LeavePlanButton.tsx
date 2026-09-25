@@ -1,10 +1,9 @@
 "use client";
 
-import { UserPlusIcon } from "lucide-react";
 import { useState, useTransition } from "react";
 import type { ReactElement } from "react";
 import { toast } from "sonner";
-import { sendFriendRequestToUserAction } from "@/features/friends/actions/send-friend-request.action";
+import { leavePlanAction } from "@/features/plans/actions/leave-plan.action";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -17,30 +16,25 @@ import {
 } from "@/shared/components/ui/alert-dialog";
 import { Button } from "@/shared/components/ui/button";
 
-interface ISendFriendRequestButtonProps {
-  friendUserId: string;
-  friendName: string;
+interface ILeavePlanButtonProps {
+  planId: string;
+  planName: string;
 }
 
-export function SendFriendRequestButton({
-  friendUserId,
-  friendName,
-}: ISendFriendRequestButtonProps): ReactElement {
+export function LeavePlanButton({
+  planId,
+  planName,
+}: ILeavePlanButtonProps): ReactElement {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  function confirmSend(): void {
+  function confirmLeave(): void {
     startTransition(async () => {
-      const result = await sendFriendRequestToUserAction(friendUserId);
+      const result = await leavePlanAction({ planId });
 
-      if (result.error) {
+      if (result?.error) {
         toast.error(result.error);
         return;
-      }
-
-      if (result.success) {
-        toast.success("Solicitud enviada");
-        setOpen(false);
       }
     });
   }
@@ -50,31 +44,30 @@ export function SendFriendRequestButton({
       <AlertDialogTrigger asChild>
         <Button
           type="button"
-          variant="outline"
-          size="icon-lg"
-          className="min-h-11 min-w-11"
-          disabled={isPending}
-          aria-label={`Enviar solicitud de amistad a ${friendName}`}
+          variant="destructive"
+          className="min-h-11 w-fit"
         >
-          <UserPlusIcon />
+          Salir del plan
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Enviar solicitud</AlertDialogTitle>
+          <AlertDialogTitle>Salir del plan</AlertDialogTitle>
           <AlertDialogDescription>
-            ¿Quieres enviar una solicitud de amistad a {friendName}?
+            Vas a salir de “{planName}”. Podrás volver si alguien te agrega de
+            nuevo.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
           <Button
             type="button"
+            variant="destructive"
             className="min-h-11"
             disabled={isPending}
-            onClick={confirmSend}
+            onClick={confirmLeave}
           >
-            {isPending ? "Enviando…" : "Enviar"}
+            {isPending ? "Saliendo…" : "Salir del plan"}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -150,8 +150,8 @@ Objetivo: CRUD de plan en Activo, miembros amigos/fantasmas, transiciones de fas
   Criterio: dispara el mismo flujo de solicitud; fantasmas sin ícono.
   Rules: `.cursor/rules/friends.mdc`
 
-- [ ] Salir / quitar miembro (sin gastos aún)
-  Criterio: creador no sale; quitar solo creador; se borra el `PlanMember`.
+- [x] Salir / quitar miembro (sin gastos aún)
+  Criterio: creador no sale; quitar registrados solo creador; quitar invitados cualquier miembro; se borra el `PlanMember`.
   Rules: `.cursor/rules/plan-permissions.mdc`
 
 - [ ] Transición Activo → Balance (guardas de miembros; gastos llegan en Fase 6)
