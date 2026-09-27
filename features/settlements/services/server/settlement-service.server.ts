@@ -23,7 +23,10 @@ import {
   getPaymentCap,
   getRecordPaymentDenial,
 } from "@/features/settlements/utils/payment-rules.utils";
-import { computeRemainingBalances } from "@/features/settlements/utils/remaining-balance.utils";
+import {
+  computeRemainingBalances,
+  sumSessionRemainingAcrossPlans,
+} from "@/features/settlements/utils/remaining-balance.utils";
 import {
   PaymentKind,
   PlanPhase,
@@ -451,4 +454,105 @@ export async function completePlan(input: ICompletePlanInput): Promise<void> {
     where: { id: plan.id },
     data: { phase: PlanPhase.COMPLETED },
   });
+}
+
+export async function getUserNetRemainingInBalancePlans(
+  userId: string,
+): Promise<number> {
+  const plans = await prisma.plan.findMany({
+    where: {
+      phase: PlanPhase.BALANCE,
+      members: { some: { userId } },
+    },
+    select: {
+      id: true,
+      members: {
+        select: {
+          id: true,
+          userId: true,
+        },
+      },
+    },
+  });
+
+  if (plans.length === 0) {
+    return 0;
+  }
+
+  const planIds = plans.map((plan) => plan.id);
+  const [expenseRows, paymentRows] = await Promise.all([
+    prisma.expense.findMany({
+      where: { planId: { in: planIds } },
+      select: {
+        planId: true,
+        paidByMemberId: true,
+        amount: true,
+        shares: {
+          select: {
+            memberId: true,
+            shareAmount: true,
+          },
+        },
+      },
+    }),
+    prisma.payment.findMany({
+      where: { planId: { in: planIds } },
+      select: {
+        planId: true,
+        fromMemberId: true,
+        toMemberId: true,
+        amount: true,
+      },
+    }),
+  ]);
+
+  const expensesByPlanId = new Map<string, typeof expenseRows>();
+  const paymentsByPlanId = new Map<string, typeof paymentRows>();
+
+  for (const expense of expenseRows) {
+    const current = expensesByPlanId.get(expense.planId) ?? [];
+    current.push(expense);
+    expensesByPlanId.set(expense.planId, current);
+  }
+
+  for (const payment of paymentRows) {
+    const current = paymentsByPlanId.get(payment.planId) ?? [];
+    current.push(payment);
+    paymentsByPlanId.set(payment.planId, current);
+  }
+
+  return sumSessionRemainingAcrossPlans(
+    plans.flatMap((plan) => {
+      const sessionMember = plan.members.find(
+        (member) => member.userId === userId,
+      );
+
+      if (!sessionMember) {
+        return [];
+      }
+
+      const expenses = expensesByPlanId.get(plan.id) ?? [];
+      const payments = paymentsByPlanId.get(plan.id) ?? [];
+
+      return [
+        {
+          sessionMemberId: sessionMember.id,
+          memberIds: plan.members.map((member) => member.id),
+          expenses: expenses.map((expense) => ({
+            paidByMemberId: expense.paidByMemberId,
+            amount: toPenNumber(expense.amount),
+            shares: expense.shares.map((share) => ({
+              memberId: share.memberId,
+              shareAmount: toPenNumber(share.shareAmount),
+            })),
+          })),
+          payments: payments.map((payment) => ({
+            fromMemberId: payment.fromMemberId,
+            toMemberId: payment.toMemberId,
+            amount: toPenNumber(payment.amount),
+          })),
+        },
+      ];
+    }),
+  );
 }

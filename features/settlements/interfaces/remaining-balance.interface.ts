@@ -29,3 +29,10 @@ export interface ISuggestedTransfer {
   toMemberId: string;
   amount: number;
 }
+
+export interface IPlanSessionRemainingInput {
+  sessionMemberId: string;
+  memberIds: readonly string[];
+  expenses: readonly IBalanceExpenseInput[];
+  payments: readonly IBalancePaymentInput[];
+}

@@ -6,6 +6,7 @@ import { PlanPhase } from "@/generated/prisma/client";
 
 const mocks = vi.hoisted(() => ({
   planFindFirst: vi.fn(),
+  planFindMany: vi.fn(),
   planUpdate: vi.fn(),
   planDelete: vi.fn(),
   planMemberFindUnique: vi.fn(),
@@ -34,6 +35,7 @@ vi.mock("@/core/db", () => ({
   prisma: {
     plan: {
       findFirst: mocks.planFindFirst,
+      findMany: mocks.planFindMany,
       update: mocks.planUpdate,
       delete: mocks.planDelete,
     },
@@ -60,6 +62,7 @@ import {
   addGhostToPlan,
   deletePlan,
   leavePlan,
+  listLivePlansForUser,
   movePlanToActive,
   movePlanToBalance,
   removePlanMember,
@@ -619,5 +622,26 @@ describe("addGhostToPlan", () => {
       expect.anything(),
       { planId: PLAN_ID, memberId: NEW_GHOST_ID },
     );
+  });
+});
+
+describe("listLivePlansForUser", () => {
+  it("pide solo planes Activo y Balance del usuario", async () => {
+    mocks.planFindMany.mockResolvedValue([
+      makePlan(PlanPhase.ACTIVE),
+      makePlan(PlanPhase.BALANCE),
+    ]);
+
+    const plans = await listLivePlansForUser(CREATOR_ID);
+
+    expect(mocks.planFindMany).toHaveBeenCalledWith({
+      where: {
+        members: { some: { userId: CREATOR_ID } },
+        phase: { in: [PlanPhase.ACTIVE, PlanPhase.BALANCE] },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(plans).toHaveLength(2);
+    expect(plans[0]?.id).toBe(PLAN_ID);
   });
 });

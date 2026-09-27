@@ -156,6 +156,17 @@ function toListItem(
   };
 }
 
+export async function countPendingReceivedFriendRequests(
+  userId: string,
+): Promise<number> {
+  return prisma.friendRequest.count({
+    where: {
+      toUserId: userId,
+      status: FriendRequestStatus.PENDING,
+    },
+  });
+}
+
 export async function listFriendRequests(
   userId: string,
 ): Promise<IFriendRequestInbox> {

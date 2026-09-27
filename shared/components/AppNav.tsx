@@ -10,6 +10,8 @@ import {
   APP_NAV_PLANS,
   APP_NAV_PLAN_SUBITEMS,
   APP_NAV_PLAN_SUBITEMS_LABEL,
+  APP_NAV_SUBITEM_CLASS,
+  APP_NAV_SUBMENU_LIST_CLASS,
 } from "@/shared/constants/app-nav.constants";
 import type { IAppNavProps } from "@/shared/interfaces/app-nav.interface";
 import { cn } from "@/shared/utils/cn.utils";
@@ -66,9 +68,7 @@ export function AppNav({ onNavigate }: IAppNavProps): ReactElement {
         <ul
           aria-label={APP_NAV_PLAN_SUBITEMS_LABEL}
           className={cn(
-            "flex flex-col gap-1",
-            APP_NAV_PLAN_SUBITEMS.length > 0 &&
-              "ml-4 border-l border-border pl-3",
+            APP_NAV_PLAN_SUBITEMS.length > 0 && APP_NAV_SUBMENU_LIST_CLASS,
           )}
         >
           {APP_NAV_PLAN_SUBITEMS.map((item) => (
@@ -76,7 +76,7 @@ export function AppNav({ onNavigate }: IAppNavProps): ReactElement {
               <Link
                 href={item.href}
                 onClick={onNavigate}
-                className="flex min-h-11 items-center rounded-md px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                className={APP_NAV_SUBITEM_CLASS}
               >
                 {item.label}
               </Link>

@@ -3,6 +3,7 @@ import type {
   IBalanceExpenseInput,
   IBalancePaymentInput,
   IMemberRemainingBalance,
+  IPlanSessionRemainingInput,
   TMemberBalanceRole,
 } from "@/features/settlements/interfaces/remaining-balance.interface";
 
@@ -137,4 +138,25 @@ export function computeRemainingBalances(
       role: getMemberBalanceRole(remaining),
     };
   });
+}
+
+export function sumSessionRemainingAcrossPlans(
+  plans: readonly IPlanSessionRemainingInput[],
+): number {
+  let totalCents = 0;
+
+  for (const plan of plans) {
+    const remaining = computeRemainingBalances(
+      plan.memberIds,
+      plan.expenses,
+      plan.payments,
+    );
+    const row = remaining.find(
+      (item) => item.memberId === plan.sessionMemberId,
+    );
+
+    totalCents += Math.round((row?.remaining ?? 0) * PEN_CENTS);
+  }
+
+  return centsToPen(totalCents);
 }

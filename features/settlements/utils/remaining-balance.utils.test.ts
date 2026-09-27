@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ValidationError } from "@/core/errors/validation.error";
 import {
   computeRemainingBalances,
+  sumSessionRemainingAcrossPlans,
   getMemberBalanceRole,
 } from "@/features/settlements/utils/remaining-balance.utils";
 
@@ -219,5 +220,48 @@ describe("computeRemainingBalances", () => {
         [{ fromMemberId: "b", toMemberId: "a", amount: 0 }],
       ),
     ).toThrow("amount_not_positive");
+  });
+});
+
+describe("sumSessionRemainingAcrossPlans", () => {
+  it("suma el remaining de la sesión entre varios planes", () => {
+    const total = sumSessionRemainingAcrossPlans([
+      {
+        sessionMemberId: "a",
+        memberIds: ["a", "b"],
+        expenses: [
+          {
+            paidByMemberId: "a",
+            amount: 40,
+            shares: [
+              { memberId: "a", shareAmount: 20 },
+              { memberId: "b", shareAmount: 20 },
+            ],
+          },
+        ],
+        payments: [],
+      },
+      {
+        sessionMemberId: "c",
+        memberIds: ["c", "d"],
+        expenses: [
+          {
+            paidByMemberId: "d",
+            amount: 10,
+            shares: [
+              { memberId: "c", shareAmount: 5 },
+              { memberId: "d", shareAmount: 5 },
+            ],
+          },
+        ],
+        payments: [],
+      },
+    ]);
+
+    expect(total).toBe(15);
+  });
+
+  it("devuelve 0 si no hay planes", () => {
+    expect(sumSessionRemainingAcrossPlans([])).toBe(0);
   });
 });

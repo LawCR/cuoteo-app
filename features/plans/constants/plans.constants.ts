@@ -1,4 +1,4 @@
-import type { ExpenseCategory, PlanPhase } from "@/generated/prisma/enums";
+import { PlanPhase, type ExpenseCategory } from "@/generated/prisma/enums";
 import { DEFAULT_EXPENSE_CATEGORY } from "@/shared/constants/expense-category.constants";
 
 export const PLAN_NAME_MAX_LENGTH = 80;
@@ -22,3 +22,8 @@ export const GHOST_NAME_MAX_LENGTH = 80;
 export const MIN_MEMBERS_TO_ENTER_BALANCE = 2;
 
 export const MIN_EXPENSES_TO_ENTER_BALANCE = 1;
+
+export const LIVE_PLAN_PHASES: readonly PlanPhase[] = [
+  PlanPhase.ACTIVE,
+  PlanPhase.BALANCE,
+];

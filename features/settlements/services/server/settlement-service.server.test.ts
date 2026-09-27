@@ -6,6 +6,7 @@ import { PaymentKind, PlanPhase } from "@/generated/prisma/client";
 
 const mocks = vi.hoisted(() => ({
   planFindFirst: vi.fn(),
+  planFindMany: vi.fn(),
   expenseFindMany: vi.fn(),
   paymentFindMany: vi.fn(),
   paymentFindFirst: vi.fn(),
@@ -19,6 +20,7 @@ vi.mock("@/core/db", () => ({
   prisma: {
     plan: {
       findFirst: mocks.planFindFirst,
+      findMany: mocks.planFindMany,
       update: mocks.planUpdate,
     },
     expense: {
@@ -38,6 +40,7 @@ import {
   completePayments,
   completePlan,
   getPlanSettlement,
+  getUserNetRemainingInBalancePlans,
   recordTransferPayment,
   voidPayment,
 } from "@/features/settlements/services/server/settlement-service.server";
@@ -532,5 +535,61 @@ describe("completePlan", () => {
       }),
     ).rejects.toMatchObject({ message: "plan_not_in_balance" });
     expect(mocks.planUpdate).not.toHaveBeenCalled();
+  });
+});
+
+describe("getUserNetRemainingInBalancePlans", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("devuelve 0 si no hay planes en Balance", async () => {
+    mocks.planFindMany.mockResolvedValue([]);
+
+    await expect(getUserNetRemainingInBalancePlans(ACTOR_ID)).resolves.toBe(0);
+    expect(mocks.expenseFindMany).not.toHaveBeenCalled();
+    expect(mocks.paymentFindMany).not.toHaveBeenCalled();
+  });
+
+  it("suma el remaining de la sesión entre planes Balance", async () => {
+    mocks.planFindMany.mockResolvedValue([
+      {
+        id: "plan-a",
+        members: [
+          { id: MEMBER_A, userId: ACTOR_ID },
+          { id: MEMBER_B, userId: "user-2" },
+        ],
+      },
+      {
+        id: "plan-b",
+        members: [
+          { id: MEMBER_C, userId: ACTOR_ID },
+          { id: "member-d", userId: "user-3" },
+        ],
+      },
+    ]);
+    mocks.expenseFindMany.mockResolvedValue([
+      {
+        planId: "plan-a",
+        paidByMemberId: MEMBER_A,
+        amount: "40.00",
+        shares: [
+          { memberId: MEMBER_A, shareAmount: "20.00" },
+          { memberId: MEMBER_B, shareAmount: "20.00" },
+        ],
+      },
+      {
+        planId: "plan-b",
+        paidByMemberId: "member-d",
+        amount: "10.00",
+        shares: [
+          { memberId: MEMBER_C, shareAmount: "5.00" },
+          { memberId: "member-d", shareAmount: "5.00" },
+        ],
+      },
+    ]);
+    mocks.paymentFindMany.mockResolvedValue([]);
+
+    await expect(getUserNetRemainingInBalancePlans(ACTOR_ID)).resolves.toBe(15);
   });
 });

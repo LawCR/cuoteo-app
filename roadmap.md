@@ -250,7 +250,7 @@ Objetivo: payments, tope, greedy, anular, cierre de creador.
 
 Objetivo: dashboard real, listado `/planes`, WhatsApp, nav con planes vivos.
 
-- [ ] Dashboard: KPIs, 10 amigos, planes Activo/Balance, CTA crear
+- [x] Dashboard: KPIs, 10 amigos, planes Activo/Balance, CTA crear
   Criterio: saldo neto del usuario en planes Balance; badge de solicitudes.
   Rules: `.cursor/rules/app-routing.mdc` · `.cursor/rules/friends.mdc` · `.cursor/rules/money.mdc`
 

@@ -9,6 +9,7 @@ import {
   includeMemberInPastExpenses,
   listExpenseTitlesWithoutShareMembers,
 } from "@/features/expenses/services/server/expense-service.server";
+import { LIVE_PLAN_PHASES } from "@/features/plans/constants/plans.constants";
 import type {
   IAddFriendToPlanInput,
   IAddGhostToPlanInput,
@@ -192,6 +193,20 @@ export async function listPlansForUser(
   const plans = await prisma.plan.findMany({
     where: {
       members: { some: { userId } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return plans.map(toPlanSummary);
+}
+
+export async function listLivePlansForUser(
+  userId: string,
+): Promise<IPlanSummary[]> {
+  const plans = await prisma.plan.findMany({
+    where: {
+      members: { some: { userId } },
+      phase: { in: [...LIVE_PLAN_PHASES] },
     },
     orderBy: { createdAt: "desc" },
   });
