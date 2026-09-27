@@ -19,6 +19,10 @@ import { PlanMetadataForm } from "@/features/plans/components/PlanMetadataForm";
 import { PlanPhaseBadge } from "@/features/plans/components/PlanPhaseBadge";
 import { RemovePlanMemberButton } from "@/features/plans/components/RemovePlanMemberButton";
 import { getPlanForUser } from "@/features/plans/services/server/plan-service.server";
+import { MemberRemainingBadge } from "@/features/settlements/components/MemberRemainingBadge";
+import { RecordPaymentSheet } from "@/features/settlements/components/RecordPaymentSheet";
+import { SettlementBalanceSection } from "@/features/settlements/components/SettlementBalanceSection";
+import { getPlanSettlement } from "@/features/settlements/services/server/settlement-service.server";
 import { FriendRequestStatus, PlanPhase } from "@/generated/prisma/enums";
 import {
   Card,
@@ -51,10 +55,13 @@ export default async function PlanDetailPage({
     throw error;
   }
 
-  const [friends, inbox, expenses] = await Promise.all([
+  const [friends, inbox, expenses, settlement] = await Promise.all([
     listFriends(user.id),
     listFriendRequests(user.id),
     listExpensesForPlan(plan.id, user.id),
+    plan.phase === PlanPhase.BALANCE
+      ? getPlanSettlement(plan.id, user.id)
+      : Promise.resolve(null),
   ]);
   const friendIds = new Set(friends.map((item) => item.friend.id));
   const pendingPeerIds = new Set(
@@ -92,6 +99,24 @@ export default async function PlanDetailPage({
   const isBalance = plan.phase === PlanPhase.BALANCE;
   const isCompleted = plan.phase === PlanPhase.COMPLETED;
   const isCreator = plan.creatorUserId === user.id;
+  const settlementByMemberId = new Map(
+    (settlement?.members ?? []).map((member) => [member.memberId, member]),
+  );
+  const debtors = (settlement?.members ?? []).filter(
+    (member) => member.role === "debtor",
+  );
+  const memberMeta = Object.fromEntries(
+    (settlement?.members ?? [])
+      .filter((member) => member.role !== "zero")
+      .map((member) => [
+        member.memberId,
+        <MemberRemainingBadge
+          key={member.memberId}
+          remaining={member.remaining}
+          role={member.role}
+        />,
+      ]),
+  );
   const memberActions = Object.fromEntries(
     plan.members.flatMap((member) => {
       const isGhost = member.userId === null;
@@ -111,15 +136,34 @@ export default async function PlanDetailPage({
         isCreator &&
         member.userId !== null &&
         member.userId !== plan.creatorUserId;
+      const balanceMember = settlementByMemberId.get(member.id);
+      const canRecordPayment = Boolean(
+        settlement?.canRecordPayments &&
+          sessionMemberId &&
+          balanceMember?.role === "creditor",
+      );
 
-      if (!canSendFriendRequest && !canRemoveGhost && !canRemoveRegistered) {
+      if (
+        !canSendFriendRequest &&
+        !canRemoveGhost &&
+        !canRemoveRegistered &&
+        !canRecordPayment
+      ) {
         return [];
       }
 
       return [
         [
           member.id,
-          <div key={member.id} className="flex items-center gap-2">
+          <div key={member.id} className="flex flex-wrap items-center justify-end gap-2">
+            {canRecordPayment && settlement && sessionMemberId && balanceMember ? (
+              <RecordPaymentSheet
+                planId={plan.id}
+                creditor={balanceMember}
+                debtors={debtors}
+                sessionMemberId={sessionMemberId}
+              />
+            ) : null}
             {canSendFriendRequest && member.user ? (
               <SendFriendRequestButton
                 friendUserId={member.user.id}
@@ -223,6 +267,7 @@ export default async function PlanDetailPage({
             members={plan.members}
             creatorUserId={plan.creatorUserId}
             memberActions={memberActions}
+            memberMeta={memberMeta}
           />
           {canEdit ? (
             <>
@@ -251,6 +296,10 @@ export default async function PlanDetailPage({
           )}
         </CardContent>
       </Card>
+
+      {settlement ? (
+        <SettlementBalanceSection transfers={settlement.transfers} />
+      ) : null}
 
       <Card className="max-w-4xl">
         <CardHeader>

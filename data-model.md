@@ -169,7 +169,7 @@ No muta expenses. Solo en fase `BALANCE` (anular/crear). Completado: inmutables.
 | `recordedByUserId` | String | FK User (sesión) |
 | `kind` | PaymentKind | `TRANSFER` o `MANUAL_CLOSE` |
 
-Saldo restante de un miembro = (suma `amount` donde pagó) − (suma `shareAmount`) − (suma payments `from`) + (suma payments `to`).
+Saldo restante de un miembro = (suma `amount` donde pagó) − (suma `shareAmount`) + (suma payments `from`) − (suma payments `to`).
 
 `MANUAL_CLOSE`: asientos de Completar pagos (creador); historial visible.
 

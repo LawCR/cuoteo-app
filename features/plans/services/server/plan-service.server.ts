@@ -93,8 +93,8 @@ function toPlanDetail(
   };
 }
 
-async function countPaymentsForPlan(_planId: string): Promise<number> {
-  return 0;
+async function countPaymentsForPlan(planId: string): Promise<number> {
+  return prisma.payment.count({ where: { planId } });
 }
 
 async function findAccessiblePlan(

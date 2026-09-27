@@ -218,12 +218,12 @@ Objetivo: payments, tope, greedy, anular, cierre de creador.
   Criterio: neto gastos − payments; clasifica deudor/acreedor/cero.
   Rules: `.cursor/rules/money.mdc` · `.cursor/rules/errors-testing.mdc`
 
-- [ ] Greedy de transferencias mínimas + tests
+- [x] Greedy de transferencias mínimas + tests
   Criterio: sobre restantes; empate = primera solución; se recalcula tras cada pago.
   Rules: `.cursor/rules/money.mdc` · `.cursor/rules/errors-testing.mdc`
 
-- [ ] Sheet registrar pago (parciales y tope)
-  Criterio: botón en acreedor; CTA Registrar; select solo deudores ≠ acreedor; default sesión si es deudor; tope `min`; badges verde/rojo.
+- [x] Sheet registrar pago (parciales y tope)
+  Criterio: botón en acreedor; CTA Registrar; select solo deudores ≠ acreedor; default sesión si es deudor; tope `min`; badges verde/rojo; transferencias mínimas visibles en Balance (se recalculan tras cada pago).
   Rules: `.cursor/rules/money.mdc` · `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/auth-onboarding.mdc`
 
 - [ ] Anular pago

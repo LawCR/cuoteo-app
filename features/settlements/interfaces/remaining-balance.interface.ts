@@ -23,3 +23,9 @@ export interface IMemberRemainingBalance {
   remaining: number;
   role: TMemberBalanceRole;
 }
+
+export interface ISuggestedTransfer {
+  fromMemberId: string;
+  toMemberId: string;
+  amount: number;
+}

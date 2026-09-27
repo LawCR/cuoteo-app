@@ -7,12 +7,14 @@ interface IPlanMemberListProps {
   members: IPlanMemberItem[];
   creatorUserId: string;
   memberActions?: Record<string, ReactNode>;
+  memberMeta?: Record<string, ReactNode>;
 }
 
 export function PlanMemberList({
   members,
   creatorUserId,
   memberActions,
+  memberMeta,
 }: IPlanMemberListProps): ReactElement {
   if (members.length === 0) {
     return (
@@ -29,6 +31,7 @@ export function PlanMemberList({
           : (member.user?.name ?? "Integrante");
         const isCreator = member.userId === creatorUserId;
         const actions = memberActions?.[member.id];
+        const meta = memberMeta?.[member.id];
 
         return (
           <li key={member.id}>
@@ -39,7 +42,10 @@ export function PlanMemberList({
             >
               <CardContent className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="truncate font-medium">{name}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="truncate font-medium">{name}</p>
+                    {meta}
+                  </div>
                   {isGhost ? (
                     <p className="text-sm text-muted-foreground">Invitado</p>
                   ) : (

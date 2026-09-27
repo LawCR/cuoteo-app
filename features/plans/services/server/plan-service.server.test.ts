@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
   excludeMemberFromPlanExpenses: vi.fn(),
   listExpenseTitlesWithoutShareMembers: vi.fn(),
   countExpensesForPlan: vi.fn(),
+  paymentCount: vi.fn(),
   transaction: vi.fn(),
 }));
 
@@ -44,6 +45,9 @@ vi.mock("@/core/db", () => ({
     },
     friendship: {
       findUnique: mocks.friendshipFindUnique,
+    },
+    payment: {
+      count: mocks.paymentCount,
     },
     $transaction: mocks.transaction,
   },
@@ -335,6 +339,7 @@ describe("movePlanToActive", () => {
     vi.clearAllMocks();
     mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.BALANCE));
     mocks.planUpdate.mockResolvedValue(makePlan(PlanPhase.ACTIVE));
+    mocks.paymentCount.mockResolvedValue(0);
   });
 
   it("vuelve a Activo desde Balance sin pagos", async () => {
@@ -348,6 +353,18 @@ describe("movePlanToActive", () => {
       data: { phase: PlanPhase.ACTIVE },
     });
     expect(result.phase).toBe(PlanPhase.ACTIVE);
+  });
+
+  it("bloquea si ya hay pagos", async () => {
+    mocks.paymentCount.mockResolvedValue(1);
+
+    await expect(
+      movePlanToActive({
+        actorUserId: MEMBER_USER_ID,
+        planId: PLAN_ID,
+      }),
+    ).rejects.toMatchObject({ message: "has_payments" });
+    expect(mocks.planUpdate).not.toHaveBeenCalled();
   });
 
   it("bloquea si el plan está activo", async () => {
