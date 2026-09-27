@@ -9,11 +9,19 @@ export {
   EXPENSE_CATEGORY_VALUES,
 } from "@/shared/constants/expense-category.constants";
 
+export const PLAN_PHASE_VALUES = [
+  PlanPhase.ACTIVE,
+  PlanPhase.BALANCE,
+  PlanPhase.COMPLETED,
+] as const;
+
 export const PLAN_PHASE_LABELS: Record<PlanPhase, string> = {
   ACTIVE: "Activo",
   BALANCE: "Balance",
   COMPLETED: "Completado",
 };
+
+export const PLAN_LIST_PHASE_ALL = "ALL" as const;
 
 export const DEFAULT_PLAN_ICON: ExpenseCategory = DEFAULT_EXPENSE_CATEGORY;
 

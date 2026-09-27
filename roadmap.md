@@ -258,7 +258,7 @@ Objetivo: dashboard real, listado `/planes`, WhatsApp, nav con planes vivos.
   Criterio: Completado no aparece; clic va a `/planes/[id]`. Mismos datos en sidebar desktop y Sheet mobile.
   Rules: `.cursor/rules/app-routing.mdc` · `.cursor/rules/ui.mdc`
 
-- [ ] `/planes`: filtros fase, nombre, rango `createdAt`; ver y eliminar
+- [x] `/planes`: filtros fase, nombre, rango `createdAt`; ver y eliminar
   Criterio: eliminar solo creador, cualquier fase, cascade.
   Rules: `.cursor/rules/app-routing.mdc` · `.cursor/rules/plan-permissions.mdc`
 

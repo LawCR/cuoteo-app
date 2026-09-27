@@ -9,6 +9,13 @@ export interface IPlanSummary {
   createdAt: Date;
 }
 
+export interface IPlanListFilters {
+  phase?: PlanPhase;
+  name?: string;
+  createdAtFrom?: Date;
+  createdAtTo?: Date;
+}
+
 export interface ICreatePlanInput {
   creatorUserId: string;
   name: string;

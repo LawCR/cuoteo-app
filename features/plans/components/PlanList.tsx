@@ -5,16 +5,20 @@ import type { IPlanSummary } from "@/features/plans/interfaces/plan.interface";
 interface IPlanListProps {
   plans: IPlanSummary[];
   currentUserId: string;
+  hasActiveFilters: boolean;
 }
 
 export function PlanList({
   plans,
   currentUserId,
+  hasActiveFilters,
 }: IPlanListProps): ReactElement {
   if (plans.length === 0) {
     return (
       <p className="text-muted-foreground">
-        Todavía no tienes planes. Crea el primero para empezar a cuotear.
+        {hasActiveFilters
+          ? "Ningún plan coincide con los filtros."
+          : "Todavía no tienes planes. Crea el primero para empezar a cuotear."}
       </p>
     );
   }

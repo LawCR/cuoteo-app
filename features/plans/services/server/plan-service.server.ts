@@ -19,6 +19,7 @@ import type {
   IMovePlanToActiveInput,
   IMovePlanToBalanceInput,
   IPlanDetail,
+  IPlanListFilters,
   IPlanMemberItem,
   IPlanSummary,
   IRemovePlanMemberInput,
@@ -189,10 +190,24 @@ async function createPlanMemberAndMaybeIncludePastExpenses(input: {
 
 export async function listPlansForUser(
   userId: string,
+  filters: IPlanListFilters = {},
 ): Promise<IPlanSummary[]> {
+  const createdAtFilter: Prisma.DateTimeFilter | undefined =
+    filters.createdAtFrom || filters.createdAtTo
+      ? {
+          ...(filters.createdAtFrom ? { gte: filters.createdAtFrom } : {}),
+          ...(filters.createdAtTo ? { lte: filters.createdAtTo } : {}),
+        }
+      : undefined;
+
   const plans = await prisma.plan.findMany({
     where: {
       members: { some: { userId } },
+      ...(filters.phase ? { phase: filters.phase } : {}),
+      ...(filters.name
+        ? { name: { contains: filters.name, mode: "insensitive" } }
+        : {}),
+      ...(createdAtFilter ? { createdAt: createdAtFilter } : {}),
     },
     orderBy: { createdAt: "desc" },
   });

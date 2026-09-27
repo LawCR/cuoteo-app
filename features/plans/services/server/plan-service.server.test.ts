@@ -63,6 +63,7 @@ import {
   deletePlan,
   leavePlan,
   listLivePlansForUser,
+  listPlansForUser,
   movePlanToActive,
   movePlanToBalance,
   removePlanMember,
@@ -622,6 +623,45 @@ describe("addGhostToPlan", () => {
       expect.anything(),
       { planId: PLAN_ID, memberId: NEW_GHOST_ID },
     );
+  });
+});
+
+describe("listPlansForUser", () => {
+  it("lista los planes del usuario sin filtros extra", async () => {
+    mocks.planFindMany.mockResolvedValue([makePlan()]);
+
+    const plans = await listPlansForUser(CREATOR_ID);
+
+    expect(mocks.planFindMany).toHaveBeenCalledWith({
+      where: {
+        members: { some: { userId: CREATOR_ID } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(plans).toHaveLength(1);
+  });
+
+  it("aplica fase, substring case-insensitive y rango createdAt", async () => {
+    mocks.planFindMany.mockResolvedValue([]);
+    const createdAtFrom = new Date("2026-09-27T05:00:00.000Z");
+    const createdAtTo = new Date("2026-09-28T04:59:59.999Z");
+
+    await listPlansForUser(CREATOR_ID, {
+      phase: PlanPhase.BALANCE,
+      name: "Cena",
+      createdAtFrom,
+      createdAtTo,
+    });
+
+    expect(mocks.planFindMany).toHaveBeenCalledWith({
+      where: {
+        members: { some: { userId: CREATOR_ID } },
+        phase: PlanPhase.BALANCE,
+        name: { contains: "Cena", mode: "insensitive" },
+        createdAt: { gte: createdAtFrom, lte: createdAtTo },
+      },
+      orderBy: { createdAt: "desc" },
+    });
   });
 });
 
