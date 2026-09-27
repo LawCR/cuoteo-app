@@ -254,7 +254,7 @@ Objetivo: dashboard real, listado `/planes`, WhatsApp, nav con planes vivos.
   Criterio: saldo neto del usuario en planes Balance; badge de solicitudes.
   Rules: `.cursor/rules/app-routing.mdc` · `.cursor/rules/friends.mdc` · `.cursor/rules/money.mdc`
 
-- [ ] Nav: subítems de planes Activo y Balance
+- [x] Nav: subítems de planes Activo y Balance
   Criterio: Completado no aparece; clic va a `/planes/[id]`. Mismos datos en sidebar desktop y Sheet mobile.
   Rules: `.cursor/rules/app-routing.mdc` · `.cursor/rules/ui.mdc`
 

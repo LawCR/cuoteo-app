@@ -12,15 +12,18 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/shared/components/ui/sheet";
+import type { IAppNavLivePlan } from "@/shared/interfaces/app-nav.interface";
 
 interface IAppShellProps {
   children: ReactNode;
+  livePlans: readonly IAppNavLivePlan[];
   name: string;
   email: string;
 }
 
 export function AppShell({
   children,
+  livePlans,
   name,
   email,
 }: IAppShellProps): ReactElement {
@@ -30,7 +33,7 @@ export function AppShell({
     <div className="flex min-h-full flex-1">
       <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-border bg-background p-4 md:flex">
         <p className="mb-6 px-3 text-lg font-semibold">Cuoteo</p>
-        <AppNav />
+        <AppNav livePlans={livePlans} />
         <AppAccountMenu
           variant="sidebar"
           name={name}
@@ -58,7 +61,10 @@ export function AppShell({
                 <SheetTitle>Cuoteo</SheetTitle>
               </SheetHeader>
               <div className="flex min-h-0 flex-1 flex-col p-4">
-                <AppNav onNavigate={() => setIsMobileNavOpen(false)} />
+                <AppNav
+                  livePlans={livePlans}
+                  onNavigate={() => setIsMobileNavOpen(false)}
+                />
               </div>
             </SheetContent>
           </Sheet>

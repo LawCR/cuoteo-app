@@ -2,20 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Wallet } from "lucide-react";
+import { LayoutDashboard, PlusIcon, Users, Wallet } from "lucide-react";
 import type { ReactElement } from "react";
+import { PlanPhase } from "@/generated/prisma/enums";
+import { AppNavSubmenu } from "@/shared/components/AppNavSubmenu";
+import { Button } from "@/shared/components/ui/button";
 import {
+  APP_NAV_CREATE_PLAN,
   APP_NAV_DASHBOARD,
   APP_NAV_FRIENDS,
+  APP_NAV_LIVE_PLAN_PHASE_LABELS,
   APP_NAV_PLANS,
-  APP_NAV_PLAN_SUBITEMS,
   APP_NAV_PLAN_SUBITEMS_LABEL,
-  APP_NAV_SUBITEM_CLASS,
-  APP_NAV_SUBMENU_LIST_CLASS,
 } from "@/shared/constants/app-nav.constants";
 import type { IAppNavProps } from "@/shared/interfaces/app-nav.interface";
 import { cn } from "@/shared/utils/cn.utils";
-import { isAppNavItemActive } from "@/shared/utils/app-nav.utils";
+import {
+  filterAppNavLivePlansByPhase,
+  isAppNavItemActive,
+} from "@/shared/utils/app-nav.utils";
 
 function NavLink({
   href,
@@ -49,7 +54,17 @@ function NavLink({
   );
 }
 
-export function AppNav({ onNavigate }: IAppNavProps): ReactElement {
+export function AppNav({ livePlans, onNavigate }: IAppNavProps): ReactElement {
+  const activePlans = filterAppNavLivePlansByPhase(
+    livePlans,
+    PlanPhase.ACTIVE,
+  );
+  const balancePlans = filterAppNavLivePlansByPhase(
+    livePlans,
+    PlanPhase.BALANCE,
+  );
+  const hasLivePlans = activePlans.length > 0 || balancePlans.length > 0;
+
   return (
     <nav aria-label="Principal" className="flex flex-col gap-1">
       <NavLink
@@ -65,24 +80,39 @@ export function AppNav({ onNavigate }: IAppNavProps): ReactElement {
           icon={<Wallet className="size-4" />}
           onNavigate={onNavigate}
         />
-        <ul
-          aria-label={APP_NAV_PLAN_SUBITEMS_LABEL}
-          className={cn(
-            APP_NAV_PLAN_SUBITEMS.length > 0 && APP_NAV_SUBMENU_LIST_CLASS,
-          )}
-        >
-          {APP_NAV_PLAN_SUBITEMS.map((item) => (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                onClick={onNavigate}
-                className={APP_NAV_SUBITEM_CLASS}
-              >
-                {item.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        {hasLivePlans ? (
+          <div
+            aria-label={APP_NAV_PLAN_SUBITEMS_LABEL}
+            className="flex flex-col gap-1"
+          >
+            <AppNavSubmenu
+              title={APP_NAV_LIVE_PLAN_PHASE_LABELS.ACTIVE}
+              plans={activePlans}
+              headerTrailing={
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="icon-lg"
+                  className="size-11 shrink-0"
+                >
+                  <Link
+                    href={APP_NAV_CREATE_PLAN.href}
+                    onClick={onNavigate}
+                    aria-label={APP_NAV_CREATE_PLAN.label}
+                  >
+                    <PlusIcon />
+                  </Link>
+                </Button>
+              }
+              onNavigate={onNavigate}
+            />
+            <AppNavSubmenu
+              title={APP_NAV_LIVE_PLAN_PHASE_LABELS.BALANCE}
+              plans={balancePlans}
+              onNavigate={onNavigate}
+            />
+          </div>
+        ) : null}
       </div>
       <NavLink
         href={APP_NAV_FRIENDS.href}

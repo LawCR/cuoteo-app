@@ -13,12 +13,20 @@ export const APP_NAV_FRIENDS = {
   label: "Amigos",
 } as const;
 
+export const APP_NAV_CREATE_PLAN = {
+  href: "/planes/nuevo",
+  label: "Crear plan",
+} as const;
+
 export const APP_NAV_PLAN_SUBITEMS_LABEL = "Planes en curso";
 
-export const APP_NAV_PLAN_SUBITEMS: ReadonlyArray<{
-  href: string;
-  label: string;
-}> = [];
+export const APP_NAV_LIVE_PLAN_PHASE_LABELS: Record<
+  "ACTIVE" | "BALANCE",
+  string
+> = {
+  ACTIVE: "Activo",
+  BALANCE: "Balance",
+};
 
 export const APP_NAV_SUBMENU_LIST_CLASS =
   "ml-4 flex flex-col gap-1 border-l border-border pl-3";
