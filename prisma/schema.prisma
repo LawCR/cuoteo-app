@@ -35,6 +35,13 @@ enum ExpenseCategory {
   @@map("expense_category")
 }
 
+enum PaymentKind {
+  TRANSFER
+  MANUAL_CLOSE
+
+  @@map("payment_kind")
+}
+
 model User {
   id                 String   @id @default(cuid())
   clerkUserId        String   @unique @map("clerk_user_id")
@@ -55,6 +62,7 @@ model User {
   friendshipsAsHigh      Friendship[]    @relation("FriendshipHigh")
   createdPlans           Plan[]          @relation("PlanCreator")
   planMemberships        PlanMember[]
+  recordedPayments       Payment[]       @relation("PaymentRecordedBy")
 
   @@map("users")
 }
@@ -101,6 +109,7 @@ model Plan {
   creator  User         @relation("PlanCreator", fields: [creatorUserId], references: [id], onDelete: Restrict)
   members  PlanMember[]
   expenses Expense[]
+  payments Payment[]
 
   @@index([creatorUserId])
   @@index([phase])
@@ -121,6 +130,8 @@ model PlanMember {
   user           User?          @relation(fields: [userId], references: [id], onDelete: Restrict)
   paidExpenses   Expense[]      @relation("ExpensePaidBy")
   expenseShares  ExpenseShare[]
+  paymentsFrom   Payment[]      @relation("PaymentFrom")
+  paymentsTo     Payment[]      @relation("PaymentTo")
 
   @@unique([planId, userId])
   @@unique([planId, ghostNameNormalized])
@@ -160,4 +171,24 @@ model ExpenseShare {
 
   @@unique([expenseId, memberId])
   @@map("expense_shares")
+}
+
+model Payment {
+  id                 String      @id @default(cuid())
+  planId             String      @map("plan_id")
+  fromMemberId       String      @map("from_member_id")
+  toMemberId         String      @map("to_member_id")
+  amount             Decimal     @db.Decimal(12, 2)
+  recordedByUserId   String      @map("recorded_by_user_id")
+  kind               PaymentKind
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
+
+  plan           Plan       @relation(fields: [planId], references: [id], onDelete: Cascade)
+  fromMember     PlanMember @relation("PaymentFrom", fields: [fromMemberId], references: [id], onDelete: Restrict)
+  toMember       PlanMember @relation("PaymentTo", fields: [toMemberId], references: [id], onDelete: Restrict)
+  recordedByUser User       @relation("PaymentRecordedBy", fields: [recordedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([planId])
+  @@map("payments")
 }

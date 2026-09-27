@@ -210,11 +210,11 @@ Objetivo: split igualitario, exclusión, tardío, gráfica; habilita la guarda �
 
 Objetivo: payments, tope, greedy, anular, cierre de creador.
 
-- [ ] Schema `Payment` + migración
+- [x] Schema `Payment` + migración
   Criterio: `from`/`to`/`amount`/`recordedBy`/`kind` según `data-model.md`.
   Rules: `data-model.md` · `.cursor/rules/data-model.mdc` · `.cursor/rules/prisma.mdc`
 
-- [ ] Cálculo de saldos restantes + tests
+- [x] Cálculo de saldos restantes + tests
   Criterio: neto gastos − payments; clasifica deudor/acreedor/cero.
   Rules: `.cursor/rules/money.mdc` · `.cursor/rules/errors-testing.mdc`
 
