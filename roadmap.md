@@ -234,7 +234,7 @@ Objetivo: payments, tope, greedy, anular, cierre de creador.
   Criterio: asientos `MANUAL_CLOSE` en historial; saldos 0; el plan sigue en Balance; destacar si hay un solo registrado.
   Rules: `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/money.mdc` · `data-model.md`
 
-- [ ] Completar plan y wipe de pagos para volver a Activo
+- [x] Completar plan y wipe de pagos para volver a Activo
   Criterio: Completar plan solo creador con saldos 0 → Completado. Wipe: solo creador, borra payments, vuelve a Activo.
   Rules: `.cursor/rules/plan-permissions.mdc`
 

@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => ({
   listExpenseTitlesWithoutShareMembers: vi.fn(),
   countExpensesForPlan: vi.fn(),
   paymentCount: vi.fn(),
+  paymentDeleteMany: vi.fn(),
   transaction: vi.fn(),
 }));
 
@@ -48,6 +49,7 @@ vi.mock("@/core/db", () => ({
     },
     payment: {
       count: mocks.paymentCount,
+      deleteMany: mocks.paymentDeleteMany,
     },
     $transaction: mocks.transaction,
   },
@@ -61,6 +63,7 @@ import {
   movePlanToActive,
   movePlanToBalance,
   removePlanMember,
+  wipePlanPaymentsAndMoveToActive,
 } from "@/features/plans/services/server/plan-service.server";
 
 const PLAN_ID = "plan-1";
@@ -400,6 +403,73 @@ describe("movePlanToActive", () => {
         planId: PLAN_ID,
       }),
     ).rejects.toBeInstanceOf(NotFoundError);
+  });
+});
+
+describe("wipePlanPaymentsAndMoveToActive", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.BALANCE));
+    mocks.planUpdate.mockResolvedValue(makePlan(PlanPhase.ACTIVE));
+    mocks.paymentCount.mockResolvedValue(2);
+    mocks.paymentDeleteMany.mockResolvedValue({ count: 2 });
+    mocks.transaction.mockImplementation(
+      async (callback: (tx: unknown) => unknown) =>
+        callback({
+          payment: { deleteMany: mocks.paymentDeleteMany },
+          plan: { update: mocks.planUpdate },
+        }),
+    );
+  });
+
+  it("borra los pagos y vuelve a Activo", async () => {
+    const result = await wipePlanPaymentsAndMoveToActive({
+      actorUserId: CREATOR_ID,
+      planId: PLAN_ID,
+    });
+
+    expect(mocks.paymentDeleteMany).toHaveBeenCalledWith({
+      where: { planId: PLAN_ID },
+    });
+    expect(mocks.planUpdate).toHaveBeenCalledWith({
+      where: { id: PLAN_ID },
+      data: { phase: PlanPhase.ACTIVE },
+    });
+    expect(result.phase).toBe(PlanPhase.ACTIVE);
+  });
+
+  it("rechaza si el actor no es el creador", async () => {
+    await expect(
+      wipePlanPaymentsAndMoveToActive({
+        actorUserId: MEMBER_USER_ID,
+        planId: PLAN_ID,
+      }),
+    ).rejects.toBeInstanceOf(UnauthorizedError);
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it("bloquea si no hay pagos", async () => {
+    mocks.paymentCount.mockResolvedValue(0);
+
+    await expect(
+      wipePlanPaymentsAndMoveToActive({
+        actorUserId: CREATOR_ID,
+        planId: PLAN_ID,
+      }),
+    ).rejects.toMatchObject({ message: "no_payments" });
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it("bloquea Completado", async () => {
+    mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.COMPLETED));
+
+    await expect(
+      wipePlanPaymentsAndMoveToActive({
+        actorUserId: CREATOR_ID,
+        planId: PLAN_ID,
+      }),
+    ).rejects.toMatchObject({ message: "plan_not_in_balance" });
+    expect(mocks.transaction).not.toHaveBeenCalled();
   });
 });
 

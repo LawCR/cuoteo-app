@@ -40,6 +40,8 @@ export interface IPlanSettlement {
   showCompletePayments: boolean;
   canCompletePayments: boolean;
   highlightCompletePayments: boolean;
+  showCompletePlan: boolean;
+  canCompletePlan: boolean;
   members: ISettlementMember[];
   transfers: ISuggestedTransferView[];
   payments: IRecordedPaymentView[];
@@ -64,6 +66,11 @@ export interface ICompletePaymentsInput {
   planId: string;
 }
 
+export interface ICompletePlanInput {
+  actorUserId: string;
+  planId: string;
+}
+
 export type TRecordPaymentActionState = {
   error: string | null;
   success: boolean;
@@ -75,6 +82,11 @@ export type TVoidPaymentActionState = {
 };
 
 export type TCompletePaymentsActionState = {
+  error: string | null;
+  success: boolean;
+};
+
+export type TCompletePlanActionState = {
   error: string | null;
   success: boolean;
 };

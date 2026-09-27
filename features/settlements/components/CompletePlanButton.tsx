@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import type { ReactElement } from "react";
 import { toast } from "sonner";
-import { completePaymentsAction } from "@/features/settlements/actions/complete-payments.action";
+import { completePlanAction } from "@/features/settlements/actions/complete-plan.action";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -16,23 +16,21 @@ import {
 } from "@/shared/components/ui/alert-dialog";
 import { Button } from "@/shared/components/ui/button";
 
-interface ICompletePaymentsButtonProps {
+interface ICompletePlanButtonProps {
   planId: string;
   canComplete: boolean;
-  highlight: boolean;
 }
 
-export function CompletePaymentsButton({
+export function CompletePlanButton({
   planId,
   canComplete,
-  highlight,
-}: ICompletePaymentsButtonProps): ReactElement {
+}: ICompletePlanButtonProps): ReactElement {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function confirmComplete(): void {
     startTransition(async () => {
-      const result = await completePaymentsAction({ planId });
+      const result = await completePlanAction({ planId });
 
       if (result.error) {
         toast.error(result.error);
@@ -40,7 +38,7 @@ export function CompletePaymentsButton({
       }
 
       if (result.success) {
-        toast.success("Pagos completados");
+        toast.success("Plan completado");
         setOpen(false);
       }
     });
@@ -55,34 +53,29 @@ export function CompletePaymentsButton({
           disabled
           className="min-h-11 w-full sm:w-auto"
         >
-          Completar pagos
+          Completar plan
         </Button>
         <p className="text-sm text-muted-foreground">
-          Los saldos ya están en cero.
+          Primero deja los saldos en cero (registrar pagos o Completar pagos).
         </p>
       </div>
     );
   }
 
   return (
-    <div className="flex w-full flex-col gap-1 sm:max-w-sm sm:w-auto">
+    <div className="flex w-full flex-col gap-1 sm:w-auto">
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogTrigger asChild>
-          <Button
-            type="button"
-            variant={highlight ? "default" : "outline"}
-            className="min-h-11 w-full sm:w-auto"
-          >
-            Completar pagos
+          <Button type="button" className="min-h-11 w-full sm:w-auto">
+            Completar plan
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Completar pagos</AlertDialogTitle>
+            <AlertDialogTitle>Completar plan</AlertDialogTitle>
             <AlertDialogDescription>
-              Se registrarán asientos de cierre para dejar los saldos en cero.
-              El plan seguirá en Balance y los pagos ya registrados no se
-              borran.
+              El plan pasará a Completado. Nadie podrá registrar pagos ni editar
+              gastos o integrantes.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -95,17 +88,11 @@ export function CompletePaymentsButton({
               disabled={isPending}
               onClick={confirmComplete}
             >
-              {isPending ? "Completando…" : "Completar pagos"}
+              {isPending ? "Completando…" : "Completar plan"}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      {highlight ? (
-        <p className="text-sm text-muted-foreground">
-          Eres el único con cuenta en este plan. Puedes cerrar los saldos
-          pendientes de una vez.
-        </p>
-      ) : null}
     </div>
   );
 }

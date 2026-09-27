@@ -6,6 +6,7 @@ import { PEN_CENTS } from "@/features/settlements/constants/settlements.constant
 import type { IMemberRemainingBalance } from "@/features/settlements/interfaces/remaining-balance.interface";
 import type {
   ICompletePaymentsInput,
+  ICompletePlanInput,
   IPlanSettlement,
   IRecordedPaymentView,
   IRecordPaymentInput,
@@ -18,6 +19,7 @@ import type {
 import { computeMinTransfers } from "@/features/settlements/utils/min-transfers.utils";
 import {
   getCompletePaymentsDenial,
+  getCompletePlanDenial,
   getPaymentCap,
   getRecordPaymentDenial,
 } from "@/features/settlements/utils/payment-rules.utils";
@@ -263,6 +265,8 @@ export async function getPlanSettlement(
     (member) => member.userId !== null,
   ).length;
   const canCompletePayments = isBalance && isCreator && transfers.length > 0;
+  const showCompletePlan = isBalance && isCreator;
+  const canCompletePlan = showCompletePlan && transfers.length === 0;
 
   return {
     planId: plan.id,
@@ -271,6 +275,8 @@ export async function getPlanSettlement(
     showCompletePayments: isBalance && isCreator,
     canCompletePayments,
     highlightCompletePayments: canCompletePayments && registeredCount === 1,
+    showCompletePlan,
+    canCompletePlan,
     members,
     transfers,
     payments: buildRecordedPaymentViews(members, payments),
@@ -410,5 +416,38 @@ export async function completePayments(
       recordedByUserId: input.actorUserId,
       kind: PaymentKind.MANUAL_CLOSE,
     })),
+  });
+}
+
+export async function completePlan(input: ICompletePlanInput): Promise<void> {
+  const plan = await findAccessiblePlanWithMembers(
+    input.planId,
+    input.actorUserId,
+  );
+  const { expenses, payments } = await loadBalanceInputs(plan.id);
+  const remaining = computeRemainingBalances(
+    plan.members.map((member) => member.id),
+    expenses,
+    payments,
+  );
+  const transfers = computeMinTransfers(remaining);
+  const denial = getCompletePlanDenial(
+    plan.phase,
+    input.actorUserId,
+    plan.creatorUserId,
+    transfers.length === 0,
+  );
+
+  if (denial === "not_plan_creator") {
+    throw new UnauthorizedError(denial, { field: "planId" });
+  }
+
+  if (denial) {
+    throw new ValidationError(denial, { field: "planId" });
+  }
+
+  await prisma.plan.update({
+    where: { id: plan.id },
+    data: { phase: PlanPhase.COMPLETED },
   });
 }

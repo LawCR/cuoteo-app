@@ -47,8 +47,13 @@ export function MovePlanToActiveButton({
 
   if (!canMove) {
     return (
-      <div className="flex flex-col gap-1">
-        <Button type="button" variant="outline" disabled className="min-h-11 w-fit">
+      <div className="flex w-full flex-col gap-1 sm:max-w-sm sm:w-auto">
+        <Button
+          type="button"
+          variant="outline"
+          disabled
+          className="min-h-11 w-full sm:w-auto"
+        >
           Volver a Activo
         </Button>
         <p className="text-sm text-muted-foreground">
@@ -59,31 +64,39 @@ export function MovePlanToActiveButton({
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger asChild>
-        <Button type="button" variant="outline" className="min-h-11 w-fit">
-          Volver a Activo
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Volver a Activo</AlertDialogTitle>
-          <AlertDialogDescription>
-            Podrás editar de nuevo los gastos y los integrantes.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
+    <div className="flex w-full flex-col gap-1 sm:w-auto">
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogTrigger asChild>
           <Button
             type="button"
-            className="min-h-11"
-            disabled={isPending}
-            onClick={confirmMove}
+            variant="outline"
+            className="min-h-11 w-full sm:w-auto"
           >
-            {isPending ? "Volviendo…" : "Volver a Activo"}
+            Volver a Activo
           </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Volver a Activo</AlertDialogTitle>
+            <AlertDialogDescription>
+              Podrás editar de nuevo los gastos y los integrantes.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending} className="min-h-11">
+              Cancelar
+            </AlertDialogCancel>
+            <Button
+              type="button"
+              className="min-h-11 w-full sm:w-auto"
+              disabled={isPending}
+              onClick={confirmMove}
+            >
+              {isPending ? "Volviendo…" : "Volver a Activo"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }

@@ -7,6 +7,11 @@ export type TCompletePaymentsDenial =
   | "plan_not_in_balance"
   | "not_plan_creator";
 
+export type TCompletePlanDenial =
+  | "plan_not_in_balance"
+  | "not_plan_creator"
+  | "balances_not_settled";
+
 export function getRecordPaymentDenial(
   phase: PlanPhase,
 ): TRecordPaymentDenial | null {
@@ -28,6 +33,27 @@ export function getCompletePaymentsDenial(
 
   if (actorUserId !== creatorUserId) {
     return "not_plan_creator";
+  }
+
+  return null;
+}
+
+export function getCompletePlanDenial(
+  phase: PlanPhase,
+  actorUserId: string,
+  creatorUserId: string,
+  isSettled: boolean,
+): TCompletePlanDenial | null {
+  if (phase !== PlanPhase.BALANCE) {
+    return "plan_not_in_balance";
+  }
+
+  if (actorUserId !== creatorUserId) {
+    return "not_plan_creator";
+  }
+
+  if (!isSettled) {
+    return "balances_not_settled";
   }
 
   return null;

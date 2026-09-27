@@ -74,6 +74,11 @@ export interface IMovePlanToActiveInput {
   planId: string;
 }
 
+export interface IWipePlanPaymentsInput {
+  actorUserId: string;
+  planId: string;
+}
+
 export interface IDeletePlanInput {
   actorUserId: string;
   planId: string;
@@ -120,6 +125,11 @@ export type TMovePlanToBalanceActionState = {
 };
 
 export type TMovePlanToActiveActionState = {
+  error: string | null;
+  success: boolean;
+};
+
+export type TWipePlanPaymentsActionState = {
   error: string | null;
   success: boolean;
 };

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { PlanPhase } from "@/generated/prisma/enums";
 import {
   getCompletePaymentsDenial,
+  getCompletePlanDenial,
   getPaymentCap,
   getRecordPaymentDenial,
 } from "@/features/settlements/utils/payment-rules.utils";
@@ -29,6 +30,35 @@ describe("getCompletePaymentsDenial", () => {
     ).toBe("plan_not_in_balance");
     expect(
       getCompletePaymentsDenial(PlanPhase.COMPLETED, "user-1", "user-1"),
+    ).toBe("plan_not_in_balance");
+  });
+});
+
+describe("getCompletePlanDenial", () => {
+  it("permite al creador en Balance con saldos en cero", () => {
+    expect(
+      getCompletePlanDenial(PlanPhase.BALANCE, "user-1", "user-1", true),
+    ).toBeNull();
+  });
+
+  it("bloquea si aún hay saldos", () => {
+    expect(
+      getCompletePlanDenial(PlanPhase.BALANCE, "user-1", "user-1", false),
+    ).toBe("balances_not_settled");
+  });
+
+  it("bloquea si el actor no es el creador", () => {
+    expect(
+      getCompletePlanDenial(PlanPhase.BALANCE, "user-2", "user-1", true),
+    ).toBe("not_plan_creator");
+  });
+
+  it("bloquea fuera de Balance", () => {
+    expect(
+      getCompletePlanDenial(PlanPhase.ACTIVE, "user-1", "user-1", true),
+    ).toBe("plan_not_in_balance");
+    expect(
+      getCompletePlanDenial(PlanPhase.COMPLETED, "user-1", "user-1", true),
     ).toBe("plan_not_in_balance");
   });
 });

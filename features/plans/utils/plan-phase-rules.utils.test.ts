@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   getMovePlanToActiveDenial,
   getMovePlanToBalanceDenial,
+  getWipePaymentsDenial,
 } from "@/features/plans/utils/plan-phase-rules.utils";
 import { PlanPhase } from "@/generated/prisma/enums";
 
@@ -106,6 +107,60 @@ describe("getMovePlanToActiveDenial", () => {
       getMovePlanToActiveDenial({
         phase: PlanPhase.COMPLETED,
         paymentCount: 0,
+      }),
+    ).toBe("plan_not_in_balance");
+  });
+});
+
+describe("getWipePaymentsDenial", () => {
+  it("permite al creador en Balance con pagos", () => {
+    expect(
+      getWipePaymentsDenial({
+        phase: PlanPhase.BALANCE,
+        actorUserId: "user-1",
+        creatorUserId: "user-1",
+        paymentCount: 2,
+      }),
+    ).toBeNull();
+  });
+
+  it("bloquea si no hay pagos", () => {
+    expect(
+      getWipePaymentsDenial({
+        phase: PlanPhase.BALANCE,
+        actorUserId: "user-1",
+        creatorUserId: "user-1",
+        paymentCount: 0,
+      }),
+    ).toBe("no_payments");
+  });
+
+  it("bloquea si el actor no es el creador", () => {
+    expect(
+      getWipePaymentsDenial({
+        phase: PlanPhase.BALANCE,
+        actorUserId: "user-2",
+        creatorUserId: "user-1",
+        paymentCount: 1,
+      }),
+    ).toBe("not_plan_creator");
+  });
+
+  it("bloquea fuera de Balance", () => {
+    expect(
+      getWipePaymentsDenial({
+        phase: PlanPhase.ACTIVE,
+        actorUserId: "user-1",
+        creatorUserId: "user-1",
+        paymentCount: 1,
+      }),
+    ).toBe("plan_not_in_balance");
+    expect(
+      getWipePaymentsDenial({
+        phase: PlanPhase.COMPLETED,
+        actorUserId: "user-1",
+        creatorUserId: "user-1",
+        paymentCount: 1,
       }),
     ).toBe("plan_not_in_balance");
   });

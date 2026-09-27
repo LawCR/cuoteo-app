@@ -12,12 +12,14 @@ const mocks = vi.hoisted(() => ({
   paymentCreate: vi.fn(),
   paymentCreateMany: vi.fn(),
   paymentDelete: vi.fn(),
+  planUpdate: vi.fn(),
 }));
 
 vi.mock("@/core/db", () => ({
   prisma: {
     plan: {
       findFirst: mocks.planFindFirst,
+      update: mocks.planUpdate,
     },
     expense: {
       findMany: mocks.expenseFindMany,
@@ -34,6 +36,7 @@ vi.mock("@/core/db", () => ({
 
 import {
   completePayments,
+  completePlan,
   getPlanSettlement,
   recordTransferPayment,
   voidPayment,
@@ -126,6 +129,8 @@ describe("getPlanSettlement", () => {
     expect(settlement.showCompletePayments).toBe(true);
     expect(settlement.canCompletePayments).toBe(true);
     expect(settlement.highlightCompletePayments).toBe(false);
+    expect(settlement.showCompletePlan).toBe(true);
+    expect(settlement.canCompletePlan).toBe(false);
     expect(settlement.members.map((member) => member.role)).toEqual([
       "creditor",
       "debtor",
@@ -442,5 +447,78 @@ describe("completePayments", () => {
       }),
     ).rejects.toMatchObject({ message: "plan_not_in_balance" });
     expect(mocks.paymentCreateMany).not.toHaveBeenCalled();
+  });
+});
+
+describe("completePlan", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.planFindFirst.mockResolvedValue(makePlan());
+    mocks.expenseFindMany.mockResolvedValue([equalSplitExpense()]);
+    mocks.paymentFindMany.mockResolvedValue([
+      {
+        id: "pay-1",
+        fromMemberId: MEMBER_B,
+        toMemberId: MEMBER_A,
+        amount: "30.00",
+        createdAt: new Date("2026-03-01"),
+        kind: PaymentKind.TRANSFER,
+      },
+      {
+        id: "pay-2",
+        fromMemberId: MEMBER_C,
+        toMemberId: MEMBER_A,
+        amount: "30.00",
+        createdAt: new Date("2026-03-02"),
+        kind: PaymentKind.TRANSFER,
+      },
+    ]);
+    mocks.planUpdate.mockResolvedValue(makePlan(PlanPhase.COMPLETED));
+  });
+
+  it("pasa a Completado cuando los saldos ya están en cero", async () => {
+    await completePlan({
+      actorUserId: ACTOR_ID,
+      planId: PLAN_ID,
+    });
+
+    expect(mocks.planUpdate).toHaveBeenCalledWith({
+      where: { id: PLAN_ID },
+      data: { phase: PlanPhase.COMPLETED },
+    });
+  });
+
+  it("rechaza si aún hay saldos", async () => {
+    mocks.paymentFindMany.mockResolvedValue([]);
+
+    await expect(
+      completePlan({
+        actorUserId: ACTOR_ID,
+        planId: PLAN_ID,
+      }),
+    ).rejects.toMatchObject({ message: "balances_not_settled" });
+    expect(mocks.planUpdate).not.toHaveBeenCalled();
+  });
+
+  it("rechaza si el actor no es el creador", async () => {
+    await expect(
+      completePlan({
+        actorUserId: "user-2",
+        planId: PLAN_ID,
+      }),
+    ).rejects.toBeInstanceOf(UnauthorizedError);
+    expect(mocks.planUpdate).not.toHaveBeenCalled();
+  });
+
+  it("bloquea fuera de Balance", async () => {
+    mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.COMPLETED));
+
+    await expect(
+      completePlan({
+        actorUserId: ACTOR_ID,
+        planId: PLAN_ID,
+      }),
+    ).rejects.toMatchObject({ message: "plan_not_in_balance" });
+    expect(mocks.planUpdate).not.toHaveBeenCalled();
   });
 });

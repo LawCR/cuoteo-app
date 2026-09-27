@@ -22,6 +22,7 @@ import type {
   IPlanSummary,
   IRemovePlanMemberInput,
   IUpdatePlanMetadataInput,
+  IWipePlanPaymentsInput,
 } from "@/features/plans/interfaces/plan.interface";
 import { normalizeGhostName } from "@/features/plans/utils/ghost-name.utils";
 import {
@@ -32,6 +33,7 @@ import {
 import {
   getMovePlanToActiveDenial,
   getMovePlanToBalanceDenial,
+  getWipePaymentsDenial,
 } from "@/features/plans/utils/plan-phase-rules.utils";
 import {
   PlanPhase,
@@ -472,6 +474,42 @@ export async function movePlanToActive(
   const updated = await prisma.plan.update({
     where: { id: plan.id },
     data: { phase: PlanPhase.ACTIVE },
+  });
+
+  return toPlanSummary(updated);
+}
+
+export async function wipePlanPaymentsAndMoveToActive(
+  input: IWipePlanPaymentsInput,
+): Promise<IPlanSummary> {
+  const plan = await findAccessiblePlan(input.planId, input.actorUserId);
+  const paymentCount = await countPaymentsForPlan(plan.id);
+  const denial = getWipePaymentsDenial({
+    phase: plan.phase,
+    actorUserId: input.actorUserId,
+    creatorUserId: plan.creatorUserId,
+    paymentCount,
+  });
+
+  if (denial === "not_plan_creator") {
+    throw new UnauthorizedError("not_plan_creator", { field: "planId" });
+  }
+
+  if (denial === "plan_not_in_balance") {
+    throw new ValidationError("plan_not_in_balance", { field: "planId" });
+  }
+
+  if (denial === "no_payments") {
+    throw new ValidationError("no_payments", { field: "planId" });
+  }
+
+  const updated = await prisma.$transaction(async (tx) => {
+    await tx.payment.deleteMany({ where: { planId: plan.id } });
+
+    return tx.plan.update({
+      where: { id: plan.id },
+      data: { phase: PlanPhase.ACTIVE },
+    });
   });
 
   return toPlanSummary(updated);

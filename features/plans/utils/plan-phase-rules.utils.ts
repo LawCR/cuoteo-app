@@ -14,6 +14,11 @@ export type TMovePlanToActiveDenial =
   | "plan_not_in_balance"
   | "has_payments";
 
+export type TWipePaymentsDenial =
+  | "plan_not_in_balance"
+  | "not_plan_creator"
+  | "no_payments";
+
 export function getMovePlanToBalanceDenial(input: {
   phase: PlanPhase;
   memberCount: number;
@@ -49,6 +54,27 @@ export function getMovePlanToActiveDenial(input: {
 
   if (input.paymentCount > 0) {
     return "has_payments";
+  }
+
+  return null;
+}
+
+export function getWipePaymentsDenial(input: {
+  phase: PlanPhase;
+  actorUserId: string;
+  creatorUserId: string;
+  paymentCount: number;
+}): TWipePaymentsDenial | null {
+  if (input.phase !== PlanPhase.BALANCE) {
+    return "plan_not_in_balance";
+  }
+
+  if (input.actorUserId !== input.creatorUserId) {
+    return "not_plan_creator";
+  }
+
+  if (input.paymentCount === 0) {
+    return "no_payments";
   }
 
   return null;

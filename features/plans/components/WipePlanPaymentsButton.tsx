@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import type { ReactElement } from "react";
 import { toast } from "sonner";
-import { completePaymentsAction } from "@/features/settlements/actions/complete-payments.action";
+import { wipePlanPaymentsAction } from "@/features/plans/actions/wipe-plan-payments.action";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -16,23 +16,19 @@ import {
 } from "@/shared/components/ui/alert-dialog";
 import { Button } from "@/shared/components/ui/button";
 
-interface ICompletePaymentsButtonProps {
+interface IWipePlanPaymentsButtonProps {
   planId: string;
-  canComplete: boolean;
-  highlight: boolean;
 }
 
-export function CompletePaymentsButton({
+export function WipePlanPaymentsButton({
   planId,
-  canComplete,
-  highlight,
-}: ICompletePaymentsButtonProps): ReactElement {
+}: IWipePlanPaymentsButtonProps): ReactElement {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  function confirmComplete(): void {
+  function confirmWipe(): void {
     startTransition(async () => {
-      const result = await completePaymentsAction({ planId });
+      const result = await wipePlanPaymentsAction({ planId });
 
       if (result.error) {
         toast.error(result.error);
@@ -40,49 +36,31 @@ export function CompletePaymentsButton({
       }
 
       if (result.success) {
-        toast.success("Pagos completados");
+        toast.success("Pagos borrados. El plan volvió a Activo");
         setOpen(false);
       }
     });
   }
 
-  if (!canComplete) {
-    return (
-      <div className="flex w-full flex-col gap-1 sm:max-w-sm sm:w-auto">
-        <Button
-          type="button"
-          variant="outline"
-          disabled
-          className="min-h-11 w-full sm:w-auto"
-        >
-          Completar pagos
-        </Button>
-        <p className="text-sm text-muted-foreground">
-          Los saldos ya están en cero.
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex w-full flex-col gap-1 sm:max-w-sm sm:w-auto">
+    <div className="flex w-full flex-col gap-1 sm:w-auto">
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogTrigger asChild>
           <Button
             type="button"
-            variant={highlight ? "default" : "outline"}
+            variant="outline"
             className="min-h-11 w-full sm:w-auto"
           >
-            Completar pagos
+            Borrar pagos y volver a Activo
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Completar pagos</AlertDialogTitle>
+            <AlertDialogTitle>Borrar pagos y volver a Activo</AlertDialogTitle>
             <AlertDialogDescription>
-              Se registrarán asientos de cierre para dejar los saldos en cero.
-              El plan seguirá en Balance y los pagos ya registrados no se
-              borran.
+              Se borrarán todos los pagos de este plan, incluidos los asientos
+              de cierre. Los gastos no se tocan. Después podrás editar gastos e
+              integrantes otra vez.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -91,21 +69,16 @@ export function CompletePaymentsButton({
             </AlertDialogCancel>
             <Button
               type="button"
+              variant="destructive"
               className="min-h-11 w-full sm:w-auto"
               disabled={isPending}
-              onClick={confirmComplete}
+              onClick={confirmWipe}
             >
-              {isPending ? "Completando…" : "Completar pagos"}
+              {isPending ? "Borrando…" : "Borrar pagos"}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      {highlight ? (
-        <p className="text-sm text-muted-foreground">
-          Eres el único con cuenta en este plan. Puedes cerrar los saldos
-          pendientes de una vez.
-        </p>
-      ) : null}
     </div>
   );
 }

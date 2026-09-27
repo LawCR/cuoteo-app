@@ -14,12 +14,14 @@ import { AddGhostToPlanForm } from "@/features/plans/components/AddGhostToPlanFo
 import { LeavePlanButton } from "@/features/plans/components/LeavePlanButton";
 import { MovePlanToActiveButton } from "@/features/plans/components/MovePlanToActiveButton";
 import { MovePlanToBalanceButton } from "@/features/plans/components/MovePlanToBalanceButton";
+import { WipePlanPaymentsButton } from "@/features/plans/components/WipePlanPaymentsButton";
 import { PlanMemberList } from "@/features/plans/components/PlanMemberList";
 import { PlanMetadataForm } from "@/features/plans/components/PlanMetadataForm";
 import { PlanPhaseBadge } from "@/features/plans/components/PlanPhaseBadge";
 import { RemovePlanMemberButton } from "@/features/plans/components/RemovePlanMemberButton";
 import { getPlanForUser } from "@/features/plans/services/server/plan-service.server";
 import { CompletePaymentsButton } from "@/features/settlements/components/CompletePaymentsButton";
+import { CompletePlanButton } from "@/features/settlements/components/CompletePlanButton";
 import { MemberRemainingBadge } from "@/features/settlements/components/MemberRemainingBadge";
 import { RecordPaymentSheet } from "@/features/settlements/components/RecordPaymentSheet";
 import { SettlementBalanceSection } from "@/features/settlements/components/SettlementBalanceSection";
@@ -222,16 +224,25 @@ export default async function PlanDetailPage({
           </div>
         ) : null}
         {isBalance ? (
-          <div className="flex flex-col gap-3">
+          <div className="flex w-full max-w-4xl flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start">
             <MovePlanToActiveButton
               planId={plan.id}
               paymentCount={plan.paymentCount}
             />
+            {isCreator && plan.paymentCount > 0 ? (
+              <WipePlanPaymentsButton planId={plan.id} />
+            ) : null}
             {settlement?.showCompletePayments ? (
               <CompletePaymentsButton
                 planId={plan.id}
                 canComplete={settlement.canCompletePayments}
                 highlight={settlement.highlightCompletePayments}
+              />
+            ) : null}
+            {settlement?.showCompletePlan ? (
+              <CompletePlanButton
+                planId={plan.id}
+                canComplete={settlement.canCompletePlan}
               />
             ) : null}
           </div>
