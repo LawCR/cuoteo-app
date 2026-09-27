@@ -226,7 +226,7 @@ Objetivo: payments, tope, greedy, anular, cierre de creador.
   Criterio: botón en acreedor; CTA Registrar; select solo deudores ≠ acreedor; default sesión si es deudor; tope `min`; badges verde/rojo; transferencias mínimas visibles en Balance (se recalculan tras cada pago).
   Rules: `.cursor/rules/money.mdc` · `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/auth-onboarding.mdc`
 
-- [ ] Anular pago
+- [x] Anular pago
   Criterio: cualquier registrado en Balance; prohibido en Completado.
   Rules: `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/money.mdc`
 

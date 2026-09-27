@@ -22,12 +22,21 @@ export interface ISuggestedTransferView extends ISuggestedTransfer {
   toName: string;
 }
 
+export interface IRecordedPaymentView {
+  id: string;
+  fromName: string;
+  toName: string;
+  amount: number;
+  createdAt: Date;
+}
+
 export interface IPlanSettlement {
   planId: string;
   sessionMemberId: string;
   canRecordPayments: boolean;
   members: ISettlementMember[];
   transfers: ISuggestedTransferView[];
+  payments: IRecordedPaymentView[];
 }
 
 export interface IRecordPaymentInput {
@@ -38,7 +47,18 @@ export interface IRecordPaymentInput {
   amount: number;
 }
 
+export interface IVoidPaymentInput {
+  actorUserId: string;
+  planId: string;
+  paymentId: string;
+}
+
 export type TRecordPaymentActionState = {
+  error: string | null;
+  success: boolean;
+};
+
+export type TVoidPaymentActionState = {
   error: string | null;
   success: boolean;
 };

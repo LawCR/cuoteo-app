@@ -7,7 +7,9 @@ const mocks = vi.hoisted(() => ({
   planFindFirst: vi.fn(),
   expenseFindMany: vi.fn(),
   paymentFindMany: vi.fn(),
+  paymentFindFirst: vi.fn(),
   paymentCreate: vi.fn(),
+  paymentDelete: vi.fn(),
 }));
 
 vi.mock("@/core/db", () => ({
@@ -20,7 +22,9 @@ vi.mock("@/core/db", () => ({
     },
     payment: {
       findMany: mocks.paymentFindMany,
+      findFirst: mocks.paymentFindFirst,
       create: mocks.paymentCreate,
+      delete: mocks.paymentDelete,
     },
   },
 }));
@@ -28,6 +32,7 @@ vi.mock("@/core/db", () => ({
 import {
   getPlanSettlement,
   recordTransferPayment,
+  voidPayment,
 } from "@/features/settlements/services/server/settlement-service.server";
 
 const PLAN_ID = "plan-1";
@@ -139,7 +144,13 @@ describe("getPlanSettlement", () => {
 
   it("recalcula el greedy después de un pago", async () => {
     mocks.paymentFindMany.mockResolvedValue([
-      { fromMemberId: MEMBER_C, toMemberId: MEMBER_A, amount: "10.00" },
+      {
+        id: "pay-1",
+        fromMemberId: MEMBER_C,
+        toMemberId: MEMBER_A,
+        amount: "10.00",
+        createdAt: new Date("2026-03-01"),
+      },
     ]);
 
     const settlement = await getPlanSettlement(PLAN_ID, ACTOR_ID);
@@ -158,6 +169,15 @@ describe("getPlanSettlement", () => {
         amount: 20,
         fromName: "Carla",
         toName: "Ana",
+      },
+    ]);
+    expect(settlement.payments).toEqual([
+      {
+        id: "pay-1",
+        fromName: "Carla",
+        toName: "Ana",
+        amount: 10,
+        createdAt: new Date("2026-03-01"),
       },
     ]);
   });
@@ -240,5 +260,69 @@ describe("recordTransferPayment", () => {
       }),
     ).rejects.toBeInstanceOf(ValidationError);
     expect(mocks.paymentCreate).not.toHaveBeenCalled();
+  });
+});
+
+describe("voidPayment", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.planFindFirst.mockResolvedValue(makePlan());
+    mocks.paymentFindFirst.mockResolvedValue({ id: "pay-1" });
+    mocks.paymentDelete.mockResolvedValue({ id: "pay-1" });
+  });
+
+  it("borra el pago en Balance", async () => {
+    await voidPayment({
+      actorUserId: ACTOR_ID,
+      planId: PLAN_ID,
+      paymentId: "pay-1",
+    });
+
+    expect(mocks.paymentFindFirst).toHaveBeenCalledWith({
+      where: { id: "pay-1", planId: PLAN_ID },
+      select: { id: true },
+    });
+    expect(mocks.paymentDelete).toHaveBeenCalledWith({
+      where: { id: "pay-1" },
+    });
+  });
+
+  it("bloquea en Completado", async () => {
+    mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.COMPLETED));
+
+    await expect(
+      voidPayment({
+        actorUserId: ACTOR_ID,
+        planId: PLAN_ID,
+        paymentId: "pay-1",
+      }),
+    ).rejects.toMatchObject({ message: "plan_not_in_balance" });
+    expect(mocks.paymentDelete).not.toHaveBeenCalled();
+  });
+
+  it("bloquea fuera de Balance", async () => {
+    mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.ACTIVE));
+
+    await expect(
+      voidPayment({
+        actorUserId: ACTOR_ID,
+        planId: PLAN_ID,
+        paymentId: "pay-1",
+      }),
+    ).rejects.toBeInstanceOf(ValidationError);
+    expect(mocks.paymentDelete).not.toHaveBeenCalled();
+  });
+
+  it("rechaza un pago que no pertenece al plan", async () => {
+    mocks.paymentFindFirst.mockResolvedValue(null);
+
+    await expect(
+      voidPayment({
+        actorUserId: ACTOR_ID,
+        planId: PLAN_ID,
+        paymentId: "pay-missing",
+      }),
+    ).rejects.toBeInstanceOf(NotFoundError);
+    expect(mocks.paymentDelete).not.toHaveBeenCalled();
   });
 });

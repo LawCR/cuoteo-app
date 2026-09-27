@@ -298,7 +298,12 @@ export default async function PlanDetailPage({
       </Card>
 
       {settlement ? (
-        <SettlementBalanceSection transfers={settlement.transfers} />
+        <SettlementBalanceSection
+          planId={plan.id}
+          transfers={settlement.transfers}
+          payments={settlement.payments}
+          canVoidPayments={settlement.canRecordPayments}
+        />
       ) : null}
 
       <Card className="max-w-4xl">
