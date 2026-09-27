@@ -194,7 +194,7 @@ Objetivo: split igualitario, exclusión, tardío, gráfica; habilita la guarda �
   Criterio: A no toca gastos viejos; B entra en todos (respetando excluidos ajenos) y recalcula.
   Rules: `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/expenses.mdc` · `.cursor/rules/money.mdc`
 
-- [ ] Salir/quitar con gastos
+- [x] Salir/quitar con gastos
   Criterio: se borran gastos que pagó; unsplit + recálculo en los demás; se borra el miembro.
   Rules: `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/money.mdc`
 

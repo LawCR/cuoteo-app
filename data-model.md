@@ -120,7 +120,7 @@ Reglas:
 - Fantasma: `userId` null; `ghostName` y `ghostNameNormalized` obligatorios. Unique `(planId, ghostNameNormalized)`.
 - Alta de registrado solo si existe `Friendship` con el creador o con quien agrega (amigo).
 
-Al quitar/salir (solo `ACTIVE`): ver rule `plan-permissions.mdc` (borrar gastos pagados por él; unsplit + recálculo; borrar este row).
+Al quitar/salir (solo `ACTIVE`): ver rule `plan-permissions.mdc` (borrar gastos pagados por él; unsplit + recálculo; borrar este row). Si un gasto de otro pagador queda sin integrantes, permanece con 0 shares (estado transitorio; no válido para Balance).
 
 ---
 
@@ -150,9 +150,9 @@ Quién participa del split (tras exclusión y recálculos).
 | `memberId` | String | FK PlanMember |
 | `shareAmount` | Decimal | Cuota ya redondeada |
 
-Unique `(expenseId, memberId)`. N ≥ 1. Suma de `shareAmount` = `Expense.amount`.
+Unique `(expenseId, memberId)`. N ≥ 1 al crear o editar. Tras salir/quitar, un gasto de otro pagador puede quedar con 0 shares hasta que se asigne al menos una persona o se borre. Suma de `shareAmount` = `Expense.amount` cuando N ≥ 1.
 
-Tardío opción B: insertar share en **todos** los expenses del plan y recalcular `shareAmount`. Opción A: no tocar expenses existentes.
+Tardío opción B: insertar share en expenses del plan **que ya tienen integrantes** y recalcular `shareAmount`. No toca gastos con 0 shares. Opción A: no tocar expenses existentes.
 
 ---
 

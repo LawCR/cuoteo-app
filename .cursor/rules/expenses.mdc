@@ -6,10 +6,11 @@ alwaysApply: false
 
 # Gastos (Activo)
 
-- Campos: concepto, monto PEN, categoría, pagador, dividido entre (todos por defecto; se puede excluir; N ≥ 1).
+- Campos: concepto, monto PEN, categoría, pagador, dividido entre (todos por defecto; se puede excluir; N ≥ 1 al crear/editar).
 - **Pagado por:** todos los integrantes (registrados y fantasmas). Default: sesión. No usar la etiqueta “Yo”.
 - Fecha = `createdAt`. Sin comprobante. CRUD de cualquier gasto por cualquier registrado miembro.
-- Gastos desbloqueados solo con **≥ 2 integrantes**.
+- Alta de gastos solo con **≥ 2 integrantes**. Editar y borrar: Activo, aunque quede 1 integrante.
+- Tras salir/quitar, un gasto puede quedar sin integrantes (borde + aviso). No se puede pasar a Balance hasta asignar ≥ 1 persona o borrar el gasto.
 - Reparto del total: **gráfica de dona** por integrante (Activo y Completado; en Balance es secundaria respecto a saldos).
 
 # Categorías e íconos

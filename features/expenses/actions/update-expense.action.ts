@@ -50,13 +50,6 @@ export async function updateExpenseAction(
         };
       }
 
-      if (error.message === "not_enough_members") {
-        return {
-          error: "Necesitas al menos 2 integrantes para editar un gasto.",
-          success: false,
-        };
-      }
-
       return {
         error: "No se pudo guardar el gasto. Revisa los datos.",
         success: false,

@@ -49,6 +49,11 @@ export interface IIncludeMemberInPastExpensesInput {
   memberId: string;
 }
 
+export interface IExcludeMemberFromPlanExpensesInput {
+  planId: string;
+  memberId: string;
+}
+
 export type TCreateExpenseActionState = {
   error: string | null;
   success: boolean;

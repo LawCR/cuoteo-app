@@ -4,12 +4,14 @@ import { ValidationError } from "@/core/errors/validation.error";
 import type {
   ICreateExpenseInput,
   IDeleteExpenseInput,
+  IExcludeMemberFromPlanExpensesInput,
   IExpenseListItem,
   IIncludeMemberInPastExpensesInput,
   IUpdateExpenseInput,
 } from "@/features/expenses/interfaces/expense.interface";
 import {
   memberIdsWithLateJoiner,
+  memberIdsWithoutLeaver,
   recalculateEqualExpenseShares,
 } from "@/features/expenses/utils/expense-split.utils";
 import {
@@ -119,7 +121,7 @@ function shareRows(amount: number, shareMemberIds: string[]) {
   }));
 }
 
-type TExpenseWriteClient = Pick<typeof prisma, "expense">;
+type TExpenseWriteClient = Pick<typeof prisma, "expense" | "expenseShare">;
 
 export async function includeMemberInPastExpenses(
   db: TExpenseWriteClient,
@@ -132,6 +134,10 @@ export async function includeMemberInPastExpenses(
 
   for (const expense of expenses) {
     const currentShareMemberIds = expense.shares.map((share) => share.memberId);
+
+    if (currentShareMemberIds.length === 0) {
+      continue;
+    }
 
     if (currentShareMemberIds.includes(input.memberId)) {
       continue;
@@ -152,6 +158,71 @@ export async function includeMemberInPastExpenses(
       },
     });
   }
+}
+
+export async function excludeMemberFromPlanExpenses(
+  db: TExpenseWriteClient,
+  input: IExcludeMemberFromPlanExpensesInput,
+): Promise<void> {
+  const expenses = await db.expense.findMany({
+    where: { planId: input.planId },
+    include: { shares: { select: { memberId: true } } },
+  });
+
+  for (const expense of expenses) {
+    if (expense.paidByMemberId === input.memberId) {
+      await db.expenseShare.deleteMany({
+        where: { expenseId: expense.id },
+      });
+      await db.expense.delete({
+        where: { id: expense.id },
+      });
+      continue;
+    }
+
+    const currentShareMemberIds = expense.shares.map((share) => share.memberId);
+
+    if (!currentShareMemberIds.includes(input.memberId)) {
+      continue;
+    }
+
+    const shareMemberIds = memberIdsWithoutLeaver(
+      currentShareMemberIds,
+      input.memberId,
+    );
+
+    if (shareMemberIds.length === 0) {
+      await db.expenseShare.deleteMany({
+        where: { expenseId: expense.id },
+      });
+      continue;
+    }
+
+    await db.expense.update({
+      where: { id: expense.id },
+      data: {
+        shares: {
+          deleteMany: {},
+          create: shareRows(toPenNumber(expense.amount), shareMemberIds),
+        },
+      },
+    });
+  }
+}
+
+export async function listExpenseTitlesWithoutShareMembers(
+  planId: string,
+): Promise<string[]> {
+  const expenses = await prisma.expense.findMany({
+    where: {
+      planId,
+      shares: { none: {} },
+    },
+    select: { title: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  return expenses.map((expense) => expense.title);
 }
 
 export async function listExpensesForPlan(
@@ -215,10 +286,7 @@ export async function updateExpense(
     input.planId,
     input.actorUserId,
   );
-  const denial = getCreateExpenseDenial({
-    phase: plan.phase,
-    memberCount: plan.members.length,
-  });
+  const denial = getMutateExpenseDenial(plan.phase);
 
   if (denial) {
     throw new ValidationError(denial, { field: "planId" });

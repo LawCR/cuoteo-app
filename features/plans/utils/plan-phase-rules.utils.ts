@@ -3,7 +3,8 @@ import { PlanPhase } from "@/generated/prisma/enums";
 
 export type TMovePlanToBalanceDenial =
   | "plan_not_active"
-  | "not_enough_members";
+  | "not_enough_members"
+  | "expenses_missing_share_members";
 
 export type TMovePlanToActiveDenial =
   | "plan_not_in_balance"
@@ -12,6 +13,7 @@ export type TMovePlanToActiveDenial =
 export function getMovePlanToBalanceDenial(input: {
   phase: PlanPhase;
   memberCount: number;
+  hasExpensesWithoutShareMembers: boolean;
 }): TMovePlanToBalanceDenial | null {
   if (input.phase !== PlanPhase.ACTIVE) {
     return "plan_not_active";
@@ -19,6 +21,10 @@ export function getMovePlanToBalanceDenial(input: {
 
   if (input.memberCount < MIN_MEMBERS_TO_ENTER_BALANCE) {
     return "not_enough_members";
+  }
+
+  if (input.hasExpensesWithoutShareMembers) {
+    return "expenses_missing_share_members";
   }
 
   return null;

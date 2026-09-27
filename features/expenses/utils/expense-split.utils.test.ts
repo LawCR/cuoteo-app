@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ValidationError } from "@/core/errors/validation.error";
 import {
   memberIdsWithLateJoiner,
+  memberIdsWithoutLeaver,
   recalculateEqualExpenseShares,
   splitEqualExpenseShares,
   sumShareCents,
@@ -85,6 +86,24 @@ describe("memberIdsWithLateJoiner", () => {
 
   it("no duplica si el tardío ya participa", () => {
     expect(memberIdsWithLateJoiner(["a", "d"], "d")).toEqual(["a", "d"]);
+  });
+});
+
+describe("memberIdsWithoutLeaver", () => {
+  it("saca al integrante y deja el resto en el mismo orden", () => {
+    expect(memberIdsWithoutLeaver(["a", "b", "c"], "b")).toEqual(["a", "c"]);
+  });
+
+  it("puede dejar un solo integrante", () => {
+    expect(memberIdsWithoutLeaver(["a", "b"], "a")).toEqual(["b"]);
+  });
+
+  it("puede dejar la lista vacía", () => {
+    expect(memberIdsWithoutLeaver(["b"], "b")).toEqual([]);
+  });
+
+  it("no cambia la lista si no participaba", () => {
+    expect(memberIdsWithoutLeaver(["a", "c"], "b")).toEqual(["a", "c"]);
   });
 });
 

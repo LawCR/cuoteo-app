@@ -3,7 +3,11 @@ import { ConflictError } from "@/core/errors/conflict.error";
 import { NotFoundError } from "@/core/errors/not-found.error";
 import { UnauthorizedError } from "@/core/errors/unauthorized.error";
 import { ValidationError } from "@/core/errors/validation.error";
-import { includeMemberInPastExpenses } from "@/features/expenses/services/server/expense-service.server";
+import {
+  excludeMemberFromPlanExpenses,
+  includeMemberInPastExpenses,
+  listExpenseTitlesWithoutShareMembers,
+} from "@/features/expenses/services/server/expense-service.server";
 import type {
   IAddFriendToPlanInput,
   IAddGhostToPlanInput,
@@ -350,7 +354,13 @@ export async function leavePlan(input: ILeavePlanInput): Promise<void> {
     throw new NotFoundError("plan_member_not_found", { field: "planId" });
   }
 
-  await prisma.planMember.delete({ where: { id: membership.id } });
+  await prisma.$transaction(async (tx) => {
+    await excludeMemberFromPlanExpenses(tx, {
+      planId: plan.id,
+      memberId: membership.id,
+    });
+    await tx.planMember.delete({ where: { id: membership.id } });
+  });
 }
 
 export async function removePlanMember(
@@ -386,7 +396,13 @@ export async function removePlanMember(
     });
   }
 
-  await prisma.planMember.delete({ where: { id: member.id } });
+  await prisma.$transaction(async (tx) => {
+    await excludeMemberFromPlanExpenses(tx, {
+      planId: plan.id,
+      memberId: member.id,
+    });
+    await tx.planMember.delete({ where: { id: member.id } });
+  });
 }
 
 export async function movePlanToBalance(
@@ -396,9 +412,12 @@ export async function movePlanToBalance(
   const memberCount = await prisma.planMember.count({
     where: { planId: plan.id },
   });
+  const expensesWithoutShareMembers =
+    await listExpenseTitlesWithoutShareMembers(plan.id);
   const denial = getMovePlanToBalanceDenial({
     phase: plan.phase,
     memberCount,
+    hasExpensesWithoutShareMembers: expensesWithoutShareMembers.length > 0,
   });
 
   if (denial === "plan_not_active") {
@@ -407,6 +426,13 @@ export async function movePlanToBalance(
 
   if (denial === "not_enough_members") {
     throw new ValidationError("not_enough_members", { field: "planId" });
+  }
+
+  if (denial === "expenses_missing_share_members") {
+    throw new ValidationError("expenses_missing_share_members", {
+      field: "planId",
+      expenseTitles: expensesWithoutShareMembers,
+    });
   }
 
   const updated = await prisma.plan.update({

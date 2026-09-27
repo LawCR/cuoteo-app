@@ -37,7 +37,9 @@ import { prisma } from "@/core/db";
 import {
   createExpense,
   deleteExpense,
+  excludeMemberFromPlanExpenses,
   includeMemberInPastExpenses,
+  listExpenseTitlesWithoutShareMembers,
   updateExpense,
 } from "@/features/expenses/services/server/expense-service.server";
 
@@ -251,6 +253,23 @@ describe("updateExpense", () => {
     ]);
   });
 
+  it("permite editar con un solo integrante en Activo", async () => {
+    mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.ACTIVE, 1));
+
+    await updateExpense({
+      actorUserId: ACTOR_ID,
+      planId: PLAN_ID,
+      expenseId: "expense-1",
+      title: "Ceviche",
+      amount: 10,
+      category: "FOOD",
+      paidByMemberId: MEMBER_A,
+      shareMemberIds: [MEMBER_A],
+    });
+
+    expect(mocks.expenseUpdate).toHaveBeenCalled();
+  });
+
   it("bloquea el recálculo fuera de Activo", async () => {
     mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.BALANCE));
 
@@ -408,5 +427,109 @@ describe("includeMemberInPastExpenses", () => {
     });
 
     expect(mocks.expenseUpdate).not.toHaveBeenCalled();
+  });
+
+  it("no toca un gasto sin integrantes", async () => {
+    mocks.expenseFindMany.mockResolvedValue([
+      {
+        id: "expense-empty",
+        amount: "10.00",
+        paidByMemberId: MEMBER_A,
+        shares: [],
+      },
+    ]);
+
+    await includeMemberInPastExpenses(prisma, {
+      planId: PLAN_ID,
+      memberId: MEMBER_D,
+    });
+
+    expect(mocks.expenseUpdate).not.toHaveBeenCalled();
+  });
+});
+
+describe("excludeMemberFromPlanExpenses", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("borra los gastos que pagó y recalcula los demás", async () => {
+    mocks.expenseFindMany.mockResolvedValue([
+      {
+        id: "paid-by-leaver",
+        amount: "40.00",
+        paidByMemberId: MEMBER_B,
+        shares: [{ memberId: MEMBER_A }, { memberId: MEMBER_B }],
+      },
+      {
+        id: "shared-with-others",
+        amount: "90.00",
+        paidByMemberId: MEMBER_A,
+        shares: [
+          { memberId: MEMBER_A },
+          { memberId: MEMBER_B },
+          { memberId: MEMBER_C },
+        ],
+      },
+    ]);
+
+    await excludeMemberFromPlanExpenses(prisma, {
+      planId: PLAN_ID,
+      memberId: MEMBER_B,
+    });
+
+    expect(mocks.expenseShareDeleteMany).toHaveBeenCalledWith({
+      where: { expenseId: "paid-by-leaver" },
+    });
+    expect(mocks.expenseDelete).toHaveBeenCalledWith({
+      where: { id: "paid-by-leaver" },
+    });
+    expect(shareAmountsFromCall(mocks.expenseUpdate.mock.calls[0][0])).toEqual([
+      { memberId: MEMBER_A, shareAmount: 45 },
+      { memberId: MEMBER_C, shareAmount: 45 },
+    ]);
+  });
+
+  it("deja el gasto sin shares si era el único incluido", async () => {
+    mocks.expenseFindMany.mockResolvedValue([
+      {
+        id: "only-leaver",
+        amount: "20.00",
+        paidByMemberId: MEMBER_A,
+        shares: [{ memberId: MEMBER_B }],
+      },
+    ]);
+
+    await excludeMemberFromPlanExpenses(prisma, {
+      planId: PLAN_ID,
+      memberId: MEMBER_B,
+    });
+
+    expect(mocks.expenseShareDeleteMany).toHaveBeenCalledWith({
+      where: { expenseId: "only-leaver" },
+    });
+    expect(mocks.expenseDelete).not.toHaveBeenCalled();
+    expect(mocks.expenseUpdate).not.toHaveBeenCalled();
+  });
+});
+
+describe("listExpenseTitlesWithoutShareMembers", () => {
+  it("devuelve los títulos en orden de creación", async () => {
+    mocks.expenseFindMany.mockResolvedValue([
+      { title: "Taxi" },
+      { title: "Cena" },
+    ]);
+
+    await expect(listExpenseTitlesWithoutShareMembers(PLAN_ID)).resolves.toEqual(
+      ["Taxi", "Cena"],
+    );
+    expect(mocks.expenseFindMany).toHaveBeenCalledWith({
+      where: {
+        planId: PLAN_ID,
+        shares: { none: {} },
+      },
+      select: { title: true },
+      orderBy: { createdAt: "asc" },
+    });
   });
 });

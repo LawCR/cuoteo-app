@@ -12,7 +12,7 @@ alwaysApply: false
 
 # Transiciones
 
-- → Balance: cualquier registrado; ≥ 2 miembros y ≥ 1 gasto (si 0 gastos, CTA bloqueado). Modal: no se podrán editar gastos ni integrantes hasta volver (si aplica).
+- → Balance: cualquier registrado; ≥ 2 miembros y ≥ 1 gasto (si 0 gastos, CTA bloqueado). Gastos sin integrantes: el botón no abre el modal; toast con el nombre del gasto. Modal: no se podrán editar gastos ni integrantes hasta volver (si aplica).
 - ← Activo: cualquier registrado si **0 pagos**; o creador borra **todos los pagos** (no gastos) + modal.
 - Completar pagos: solo creador; asientos de cierre en historial; el plan **sigue en Balance**. Destacar el atajo si hay **un solo registrado**.
 - Completar plan: solo creador; saldos ya en 0 → Completado.
@@ -28,9 +28,10 @@ alwaysApply: false
 
 - Borrar gastos donde es **pagador**.
 - En gastos de otro pagador: sacarlo del split y recalcular; el gasto permanece.
+- Si queda sin integrantes: 0 shares (card incompleto). Tardío A/B no lo toca. Editar o borrar gastos existentes no exige ≥ 2 integrantes.
 - Borrar su fila de miembro.
 
 # Tardío (Activo, si ya hay gastos)
 
 - A (default): solo gastos futuros.
-- B: incluir en **todos** los gastos pasados (también con exclusiones ajenas); pagador no cambia. Sin gastos previos: sin modal.
+- B: incluir en **todos** los gastos pasados que ya tienen integrantes (también con exclusiones ajenas); pagador no cambia. No toca gastos con 0 shares. Sin gastos previos: sin modal.

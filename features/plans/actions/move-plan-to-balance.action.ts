@@ -11,6 +11,7 @@ import {
   type TMovePlanToBalanceFormData,
 } from "@/features/plans/schemas/move-plan-to-balance.schema";
 import { movePlanToBalance } from "@/features/plans/services/server/plan-service.server";
+import { formatExpensesMissingShareMembersMessage } from "@/features/plans/utils/plan-balance-messages.utils";
 
 export async function movePlanToBalanceAction(
   input: TMovePlanToBalanceFormData,
@@ -36,6 +37,19 @@ export async function movePlanToBalanceAction(
       if (error.message === "not_enough_members") {
         return {
           error: "Necesitas al menos 2 integrantes para pasar a Balance.",
+          success: false,
+        };
+      }
+
+      if (error.message === "expenses_missing_share_members") {
+        const titles = Array.isArray(error.meta?.expenseTitles)
+          ? error.meta.expenseTitles.filter(
+              (title): title is string => typeof title === "string",
+            )
+          : [];
+
+        return {
+          error: formatExpensesMissingShareMembersMessage(titles),
           success: false,
         };
       }

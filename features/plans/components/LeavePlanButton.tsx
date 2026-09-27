@@ -19,11 +19,13 @@ import { Button } from "@/shared/components/ui/button";
 interface ILeavePlanButtonProps {
   planId: string;
   planName: string;
+  hasExpenses: boolean;
 }
 
 export function LeavePlanButton({
   planId,
   planName,
+  hasExpenses,
 }: ILeavePlanButtonProps): ReactElement {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -54,8 +56,9 @@ export function LeavePlanButton({
         <AlertDialogHeader>
           <AlertDialogTitle>Salir del plan</AlertDialogTitle>
           <AlertDialogDescription>
-            Vas a salir de “{planName}”. Podrás volver si alguien te agrega de
-            nuevo.
+            {hasExpenses
+              ? `Vas a salir de “${planName}”. Se eliminarán los gastos que pagaste y dejarás de estar incluido en el resto. El plan se recalculará entre quienes se queden.`
+              : `Vas a salir de “${planName}”. Podrás volver si alguien te agrega de nuevo.`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -21,12 +21,14 @@ interface IRemovePlanMemberButtonProps {
   planId: string;
   memberId: string;
   memberName: string;
+  hasExpenses: boolean;
 }
 
 export function RemovePlanMemberButton({
   planId,
   memberId,
   memberName,
+  hasExpenses,
 }: IRemovePlanMemberButtonProps): ReactElement {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -64,7 +66,9 @@ export function RemovePlanMemberButton({
         <AlertDialogHeader>
           <AlertDialogTitle>Quitar integrante</AlertDialogTitle>
           <AlertDialogDescription>
-            ¿Quitar a {memberName} de este plan?
+            {hasExpenses
+              ? `¿Quitar a ${memberName} de este plan? Se eliminarán los gastos que pagó y dejará de estar incluido en los demás. El plan se recalculará entre quienes se queden.`
+              : `¿Quitar a ${memberName} de este plan?`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

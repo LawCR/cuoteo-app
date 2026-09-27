@@ -15,11 +15,15 @@ const mocks = vi.hoisted(() => ({
   planMemberCount: vi.fn(),
   friendshipFindUnique: vi.fn(),
   includeMemberInPastExpenses: vi.fn(),
+  excludeMemberFromPlanExpenses: vi.fn(),
+  listExpenseTitlesWithoutShareMembers: vi.fn(),
   transaction: vi.fn(),
 }));
 
 vi.mock("@/features/expenses/services/server/expense-service.server", () => ({
   includeMemberInPastExpenses: mocks.includeMemberInPastExpenses,
+  excludeMemberFromPlanExpenses: mocks.excludeMemberFromPlanExpenses,
+  listExpenseTitlesWithoutShareMembers: mocks.listExpenseTitlesWithoutShareMembers,
 }));
 
 vi.mock("@/core/db", () => ({
@@ -82,11 +86,24 @@ describe("leavePlan", () => {
       userId: MEMBER_USER_ID,
     });
     mocks.planMemberDelete.mockResolvedValue({});
+    mocks.excludeMemberFromPlanExpenses.mockResolvedValue(undefined);
+    mocks.transaction.mockImplementation(
+      async (callback: (tx: unknown) => unknown) =>
+        callback({
+          planMember: { delete: mocks.planMemberDelete },
+        }),
+    );
   });
 
-  it("borra la membresía del integrante en Activo", async () => {
+  it("borra gastos del pagador, recalcula el resto y quita la membresía", async () => {
     await leavePlan({ actorUserId: MEMBER_USER_ID, planId: PLAN_ID });
 
+    expect(mocks.excludeMemberFromPlanExpenses).toHaveBeenCalledWith(
+      expect.objectContaining({
+        planMember: { delete: mocks.planMemberDelete },
+      }),
+      { planId: PLAN_ID, memberId: MEMBER_ROW_ID },
+    );
     expect(mocks.planMemberDelete).toHaveBeenCalledWith({
       where: { id: MEMBER_ROW_ID },
     });
@@ -133,6 +150,13 @@ describe("removePlanMember", () => {
     vi.clearAllMocks();
     mocks.planFindFirst.mockResolvedValue(makePlan());
     mocks.planMemberDelete.mockResolvedValue({});
+    mocks.excludeMemberFromPlanExpenses.mockResolvedValue(undefined);
+    mocks.transaction.mockImplementation(
+      async (callback: (tx: unknown) => unknown) =>
+        callback({
+          planMember: { delete: mocks.planMemberDelete },
+        }),
+    );
   });
 
   it("permite al creador quitar a un registrado", async () => {
@@ -223,6 +247,7 @@ describe("movePlanToBalance", () => {
     vi.clearAllMocks();
     mocks.planFindFirst.mockResolvedValue(makePlan());
     mocks.planMemberCount.mockResolvedValue(2);
+    mocks.listExpenseTitlesWithoutShareMembers.mockResolvedValue([]);
     mocks.planUpdate.mockResolvedValue(makePlan(PlanPhase.BALANCE));
   });
 
@@ -260,6 +285,21 @@ describe("movePlanToBalance", () => {
         planId: PLAN_ID,
       }),
     ).rejects.toBeInstanceOf(ValidationError);
+    expect(mocks.planUpdate).not.toHaveBeenCalled();
+  });
+
+  it("bloquea si hay gastos sin integrantes", async () => {
+    mocks.listExpenseTitlesWithoutShareMembers.mockResolvedValue(["Taxi"]);
+
+    await expect(
+      movePlanToBalance({
+        actorUserId: MEMBER_USER_ID,
+        planId: PLAN_ID,
+      }),
+    ).rejects.toMatchObject({
+      message: "expenses_missing_share_members",
+      meta: { expenseTitles: ["Taxi"] },
+    });
     expect(mocks.planUpdate).not.toHaveBeenCalled();
   });
 

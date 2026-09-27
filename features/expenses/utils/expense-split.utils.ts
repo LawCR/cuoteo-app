@@ -85,6 +85,13 @@ export function memberIdsWithLateJoiner(
   return [...currentShareMemberIds, lateMemberId];
 }
 
+export function memberIdsWithoutLeaver(
+  currentShareMemberIds: readonly string[],
+  leavingMemberId: string,
+): string[] {
+  return currentShareMemberIds.filter((memberId) => memberId !== leavingMemberId);
+}
+
 export function recalculateEqualExpenseShares(
   amount: number,
   memberIds: readonly string[],

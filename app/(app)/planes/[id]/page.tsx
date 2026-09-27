@@ -131,6 +131,7 @@ export default async function PlanDetailPage({
                 planId={plan.id}
                 memberId={member.id}
                 memberName={memberName}
+                hasExpenses={expenses.length > 0}
               />
             ) : null}
           </div>,
@@ -159,11 +160,18 @@ export default async function PlanDetailPage({
         {canEdit ? (
           <div className="flex flex-col gap-3">
             {!isCreator ? (
-              <LeavePlanButton planId={plan.id} planName={plan.name} />
+              <LeavePlanButton
+                planId={plan.id}
+                planName={plan.name}
+                hasExpenses={expenses.length > 0}
+              />
             ) : null}
             <MovePlanToBalanceButton
               planId={plan.id}
               memberCount={plan.members.length}
+              incompleteExpenseTitles={expenses
+                .filter((expense) => expense.shareMemberIds.length === 0)
+                .map((expense) => expense.title)}
             />
           </div>
         ) : null}

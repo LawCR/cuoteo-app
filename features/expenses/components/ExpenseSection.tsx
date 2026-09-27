@@ -26,7 +26,7 @@ export function ExpenseSection({
   canEdit,
 }: IExpenseSectionProps): ReactElement {
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
-  const canMutateExpenses =
+  const canCreateExpenses =
     canEdit && members.length >= MIN_MEMBERS_TO_CREATE_EXPENSE;
   const editingExpense = expenses.find(
     (expense) => expense.id === editingExpenseId,
@@ -36,40 +36,38 @@ export function ExpenseSection({
     <div className="flex flex-col gap-6">
       <ExpenseList
         expenses={expenses}
-        canEdit={canMutateExpenses}
+        canEdit={canEdit}
         onEdit={(expense) => setEditingExpenseId(expense.id)}
       />
-      {canMutateExpenses ? (
-        editingExpense ? (
-          <div className="flex flex-col gap-3">
-            <h2 className="text-base font-medium">Editar gasto</h2>
-            <ExpenseForm
-              mode="edit"
-              planId={planId}
-              expenseId={editingExpense.id}
-              members={members}
-              sessionMemberId={sessionMemberId}
-              defaultValues={{
-                title: editingExpense.title,
-                amount: editingExpense.amount.toFixed(2),
-                category: editingExpense.category,
-                paidByMemberId: editingExpense.paidByMemberId,
-                shareMemberIds: editingExpense.shareMemberIds,
-              }}
-              onCancel={() => setEditingExpenseId(null)}
-            />
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3">
-            <h2 className="text-base font-medium">Nuevo gasto</h2>
-            <ExpenseForm
-              mode="create"
-              planId={planId}
-              members={members}
-              sessionMemberId={sessionMemberId}
-            />
-          </div>
-        )
+      {canEdit && editingExpense ? (
+        <div className="flex flex-col gap-3">
+          <h2 className="text-base font-medium">Editar gasto</h2>
+          <ExpenseForm
+            mode="edit"
+            planId={planId}
+            expenseId={editingExpense.id}
+            members={members}
+            sessionMemberId={sessionMemberId}
+            defaultValues={{
+              title: editingExpense.title,
+              amount: editingExpense.amount.toFixed(2),
+              category: editingExpense.category,
+              paidByMemberId: editingExpense.paidByMemberId,
+              shareMemberIds: editingExpense.shareMemberIds,
+            }}
+            onCancel={() => setEditingExpenseId(null)}
+          />
+        </div>
+      ) : canCreateExpenses ? (
+        <div className="flex flex-col gap-3">
+          <h2 className="text-base font-medium">Nuevo gasto</h2>
+          <ExpenseForm
+            mode="create"
+            planId={planId}
+            members={members}
+            sessionMemberId={sessionMemberId}
+          />
+        </div>
       ) : canEdit ? (
         <p className="text-sm text-muted-foreground">
           Agrega al menos {MIN_MEMBERS_TO_CREATE_EXPENSE} integrantes para
