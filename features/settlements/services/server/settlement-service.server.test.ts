@@ -131,6 +131,7 @@ describe("getPlanSettlement", () => {
     expect(settlement.highlightCompletePayments).toBe(false);
     expect(settlement.showCompletePlan).toBe(true);
     expect(settlement.canCompletePlan).toBe(false);
+    expect(settlement.showSuggestedTransfers).toBe(true);
     expect(settlement.members.map((member) => member.role)).toEqual([
       "creditor",
       "debtor",
@@ -223,6 +224,17 @@ describe("getPlanSettlement", () => {
     await expect(getPlanSettlement(PLAN_ID, ACTOR_ID)).rejects.toBeInstanceOf(
       NotFoundError,
     );
+  });
+
+  it("en Completado muestra historial sin mutaciones", async () => {
+    mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.COMPLETED));
+
+    const settlement = await getPlanSettlement(PLAN_ID, ACTOR_ID);
+
+    expect(settlement.canRecordPayments).toBe(false);
+    expect(settlement.showSuggestedTransfers).toBe(false);
+    expect(settlement.showCompletePayments).toBe(false);
+    expect(settlement.showCompletePlan).toBe(false);
   });
 });
 

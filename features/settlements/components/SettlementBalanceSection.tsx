@@ -18,6 +18,7 @@ interface ISettlementBalanceSectionProps {
   transfers: ISuggestedTransferView[];
   payments: IRecordedPaymentView[];
   canVoidPayments: boolean;
+  showSuggestedTransfers: boolean;
 }
 
 export function SettlementBalanceSection({
@@ -25,27 +26,31 @@ export function SettlementBalanceSection({
   transfers,
   payments,
   canVoidPayments,
+  showSuggestedTransfers,
 }: ISettlementBalanceSectionProps): ReactElement {
   return (
     <>
+      {showSuggestedTransfers ? (
+        <Card className="max-w-4xl">
+          <CardHeader>
+            <CardTitle>Transferencias mínimas</CardTitle>
+            <CardDescription>
+              Una forma de saldar el plan con la menor cantidad de pagos. Se
+              actualiza cada vez que registras o anulas un pago.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SuggestedTransfersList transfers={transfers} />
+          </CardContent>
+        </Card>
+      ) : null}
       <Card className="max-w-4xl">
         <CardHeader>
-          <CardTitle>Transferencias mínimas</CardTitle>
+          <CardTitle>Historial de pagos</CardTitle>
           <CardDescription>
-            Una forma de saldar el plan con la menor cantidad de pagos. Se
-            actualiza cada vez que registras o anulas un pago.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <SuggestedTransfersList transfers={transfers} />
-        </CardContent>
-      </Card>
-      <Card className="max-w-4xl">
-        <CardHeader>
-          <CardTitle>Pagos registrados</CardTitle>
-          <CardDescription>
-            Cualquier integrante con cuenta puede anular un pago mientras el
-            plan esté en balance.
+            {canVoidPayments
+              ? "Cualquier integrante con cuenta puede anular un pago mientras el plan esté en balance."
+              : "Consulta los pagos de este plan. En Completado no se puede anular ni registrar."}
           </CardDescription>
         </CardHeader>
         <CardContent>

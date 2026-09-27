@@ -59,8 +59,9 @@ export function ExpenseList({
                   </p>
                   {isIncomplete ? (
                     <p role="alert" className="mt-2 text-sm text-destructive">
-                      Nadie está incluido. Edítalo para elegir quiénes lo
-                      dividen.
+                      {canEdit
+                        ? "Nadie está incluido. Edítalo para elegir quiénes lo dividen."
+                        : "Nadie está incluido. Este gasto no entra en el total."}
                     </p>
                   ) : null}
                   <p className="text-xs text-muted-foreground">

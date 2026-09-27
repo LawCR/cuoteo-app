@@ -277,6 +277,7 @@ export async function getPlanSettlement(
     highlightCompletePayments: canCompletePayments && registeredCount === 1,
     showCompletePlan,
     canCompletePlan,
+    showSuggestedTransfers: isBalance,
     members,
     transfers,
     payments: buildRecordedPaymentViews(members, payments),

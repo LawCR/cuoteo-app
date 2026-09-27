@@ -238,7 +238,7 @@ Objetivo: payments, tope, greedy, anular, cierre de creador.
   Criterio: Completar plan solo creador con saldos 0 → Completado. Wipe: solo creador, borra payments, vuelve a Activo.
   Rules: `.cursor/rules/plan-permissions.mdc`
 
-- [ ] Historial de pagos y gastos readonly en Balance/Completado
+- [x] Historial de pagos y gastos readonly en Balance/Completado
   Criterio: gastos en vista secundaria; Completado sin mutaciones.
   Rules: `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/expenses.mdc`
 

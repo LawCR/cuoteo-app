@@ -14,11 +14,12 @@ import { AddGhostToPlanForm } from "@/features/plans/components/AddGhostToPlanFo
 import { LeavePlanButton } from "@/features/plans/components/LeavePlanButton";
 import { MovePlanToActiveButton } from "@/features/plans/components/MovePlanToActiveButton";
 import { MovePlanToBalanceButton } from "@/features/plans/components/MovePlanToBalanceButton";
-import { WipePlanPaymentsButton } from "@/features/plans/components/WipePlanPaymentsButton";
+import { PlanHistoryTabs } from "@/features/plans/components/PlanHistoryTabs";
 import { PlanMemberList } from "@/features/plans/components/PlanMemberList";
 import { PlanMetadataForm } from "@/features/plans/components/PlanMetadataForm";
 import { PlanPhaseBadge } from "@/features/plans/components/PlanPhaseBadge";
 import { RemovePlanMemberButton } from "@/features/plans/components/RemovePlanMemberButton";
+import { WipePlanPaymentsButton } from "@/features/plans/components/WipePlanPaymentsButton";
 import { getPlanForUser } from "@/features/plans/services/server/plan-service.server";
 import { CompletePaymentsButton } from "@/features/settlements/components/CompletePaymentsButton";
 import { CompletePlanButton } from "@/features/settlements/components/CompletePlanButton";
@@ -62,7 +63,7 @@ export default async function PlanDetailPage({
     listFriends(user.id),
     listFriendRequests(user.id),
     listExpensesForPlan(plan.id, user.id),
-    plan.phase === PlanPhase.BALANCE
+    plan.phase === PlanPhase.BALANCE || plan.phase === PlanPhase.COMPLETED
       ? getPlanSettlement(plan.id, user.id)
       : Promise.resolve(null),
   ]);
@@ -185,6 +186,73 @@ export default async function PlanDetailPage({
         ],
       ];
     }),
+  );
+
+  const expensesSection = sessionMemberId ? (
+    <ExpenseSection
+      planId={plan.id}
+      members={expenseMembers}
+      sessionMemberId={sessionMemberId}
+      expenses={expenses}
+      canEdit={canEdit}
+    />
+  ) : (
+    <p className="text-sm text-muted-foreground">
+      No encontramos tu membresía en este plan.
+    </p>
+  );
+  const expensesListSection = sessionMemberId ? (
+    <ExpenseSection
+      planId={plan.id}
+      members={expenseMembers}
+      sessionMemberId={sessionMemberId}
+      expenses={expenses}
+      canEdit={false}
+      showChart={false}
+    />
+  ) : (
+    <p className="text-sm text-muted-foreground">
+      No encontramos tu membresía en este plan.
+    </p>
+  );
+  const shareSection = sessionMemberId ? (
+    <ExpenseSection
+      planId={plan.id}
+      members={expenseMembers}
+      sessionMemberId={sessionMemberId}
+      expenses={expenses}
+      canEdit={false}
+      showList={false}
+      showChartTitle={false}
+    />
+  ) : (
+    <p className="text-sm text-muted-foreground">
+      No encontramos tu membresía en este plan.
+    </p>
+  );
+  const settlementSection = settlement ? (
+    <SettlementBalanceSection
+      planId={plan.id}
+      transfers={settlement.transfers}
+      payments={settlement.payments}
+      canVoidPayments={settlement.canRecordPayments}
+      showSuggestedTransfers={settlement.showSuggestedTransfers}
+    />
+  ) : null;
+  const expensesHistoryCard = (
+    <Card className="max-w-4xl">
+      <CardHeader>
+        <CardTitle>Gastos</CardTitle>
+        <CardDescription>
+          {canEdit
+            ? "Concepto, monto, categoría y quién pagó. Arriba ves el total y el reparto por integrante."
+            : "Consulta el detalle de cada gasto. No se puede editar fuera de Activo."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {isCompleted ? expensesListSection : expensesSection}
+      </CardContent>
+    </Card>
   );
 
   return (
@@ -318,39 +386,41 @@ export default async function PlanDetailPage({
         </CardContent>
       </Card>
 
-      {settlement ? (
-        <SettlementBalanceSection
-          planId={plan.id}
-          transfers={settlement.transfers}
-          payments={settlement.payments}
-          canVoidPayments={settlement.canRecordPayments}
+      {isBalance && settlementSection ? (
+        <PlanHistoryTabs
+          defaultTab="settlement"
+          settlementLabel="Liquidación"
+          expensesLabel="Gastos"
+          settlementPanel={settlementSection}
+          expensesPanel={expensesHistoryCard}
         />
       ) : null}
 
-      <Card className="max-w-4xl">
-        <CardHeader>
-          <CardTitle>Gastos</CardTitle>
-          <CardDescription>
-            Concepto, monto, categoría y quién pagó. Arriba ves el total y el
-            reparto por integrante.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {sessionMemberId ? (
-            <ExpenseSection
-              planId={plan.id}
-              members={expenseMembers}
-              sessionMemberId={sessionMemberId}
-              expenses={expenses}
-              canEdit={canEdit}
+      {isCompleted ? (
+        <>
+          <Card className="max-w-4xl">
+            <CardHeader>
+              <CardTitle>Reparto</CardTitle>
+              <CardDescription>
+                Cuánto le tocó a cada integrante. Este plan está completado y no
+                se puede modificar.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>{shareSection}</CardContent>
+          </Card>
+          {settlementSection ? (
+            <PlanHistoryTabs
+              defaultTab="settlement"
+              settlementLabel="Pagos"
+              expensesLabel="Gastos"
+              settlementPanel={settlementSection}
+              expensesPanel={expensesHistoryCard}
             />
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              No encontramos tu membresía en este plan.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+          ) : null}
+        </>
+      ) : null}
+
+      {canEdit ? expensesHistoryCard : null}
     </main>
   );
 }

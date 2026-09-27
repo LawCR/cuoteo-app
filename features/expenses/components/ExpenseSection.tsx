@@ -18,6 +18,9 @@ interface IExpenseSectionProps {
   sessionMemberId: string;
   expenses: IExpenseListItem[];
   canEdit: boolean;
+  showChart?: boolean;
+  showList?: boolean;
+  showChartTitle?: boolean;
 }
 
 export function ExpenseSection({
@@ -26,6 +29,9 @@ export function ExpenseSection({
   sessionMemberId,
   expenses,
   canEdit,
+  showChart = true,
+  showList = true,
+  showChartTitle = true,
 }: IExpenseSectionProps): ReactElement {
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const canCreateExpenses =
@@ -37,70 +43,79 @@ export function ExpenseSection({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        <h2 className="text-base font-medium">Reparto</h2>
-        {expenses.length === 0 ? (
+      {showChart ? (
+        <div className="flex flex-col gap-3">
+          {showChartTitle ? (
+            <h2 className="text-base font-medium">Reparto</h2>
+          ) : null}
+          {expenses.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Cuando haya gastos, aquí verás el total y cuánto le toca a cada
+              integrante.
+            </p>
+          ) : (
+            <>
+              <ExpenseShareChart breakdown={shareBreakdown} />
+              {shareBreakdown.incompleteCount > 0 ? (
+                <p role="alert" className="text-sm text-destructive">
+                  {shareBreakdown.incompleteCount === 1
+                    ? "Hay 1 gasto sin integrantes. No entra en el total hasta que elijas quiénes lo dividen."
+                    : `Hay ${shareBreakdown.incompleteCount} gastos sin integrantes. No entran en el total hasta que elijas quiénes los dividen.`}
+                </p>
+              ) : null}
+            </>
+          )}
+        </div>
+      ) : null}
+      {showList ? (
+        <ExpenseList
+          expenses={expenses}
+          canEdit={canEdit}
+          onEdit={(expense) => setEditingExpenseId(expense.id)}
+        />
+      ) : null}
+      {showList ? (
+        canEdit && editingExpense ? (
+          <div className="flex flex-col gap-3">
+            <h2 className="text-base font-medium">Editar gasto</h2>
+            <ExpenseForm
+              mode="edit"
+              planId={planId}
+              expenseId={editingExpense.id}
+              members={members}
+              sessionMemberId={sessionMemberId}
+              defaultValues={{
+                title: editingExpense.title,
+                amount: editingExpense.amount.toFixed(2),
+                category: editingExpense.category,
+                paidByMemberId: editingExpense.paidByMemberId,
+                shareMemberIds: editingExpense.shareMemberIds,
+              }}
+              onCancel={() => setEditingExpenseId(null)}
+            />
+          </div>
+        ) : canCreateExpenses ? (
+          <div className="flex flex-col gap-3">
+            <h2 className="text-base font-medium">Nuevo gasto</h2>
+            <ExpenseForm
+              mode="create"
+              planId={planId}
+              members={members}
+              sessionMemberId={sessionMemberId}
+            />
+          </div>
+        ) : canEdit ? (
           <p className="text-sm text-muted-foreground">
-            Cuando haya gastos, aquí verás el total y cuánto le toca a cada
-            integrante.
+            Agrega al menos {MIN_MEMBERS_TO_CREATE_EXPENSE} integrantes para
+            registrar gastos.
           </p>
         ) : (
-          <>
-            <ExpenseShareChart breakdown={shareBreakdown} />
-            {shareBreakdown.incompleteCount > 0 ? (
-              <p role="alert" className="text-sm text-destructive">
-                {shareBreakdown.incompleteCount === 1
-                  ? "Hay 1 gasto sin integrantes. No entra en el total hasta que elijas quiénes lo dividen."
-                  : `Hay ${shareBreakdown.incompleteCount} gastos sin integrantes. No entran en el total hasta que elijas quiénes los dividen.`}
-              </p>
-            ) : null}
-          </>
-        )}
-      </div>
-      <ExpenseList
-        expenses={expenses}
-        canEdit={canEdit}
-        onEdit={(expense) => setEditingExpenseId(expense.id)}
-      />
-      {canEdit && editingExpense ? (
-        <div className="flex flex-col gap-3">
-          <h2 className="text-base font-medium">Editar gasto</h2>
-          <ExpenseForm
-            mode="edit"
-            planId={planId}
-            expenseId={editingExpense.id}
-            members={members}
-            sessionMemberId={sessionMemberId}
-            defaultValues={{
-              title: editingExpense.title,
-              amount: editingExpense.amount.toFixed(2),
-              category: editingExpense.category,
-              paidByMemberId: editingExpense.paidByMemberId,
-              shareMemberIds: editingExpense.shareMemberIds,
-            }}
-            onCancel={() => setEditingExpenseId(null)}
-          />
-        </div>
-      ) : canCreateExpenses ? (
-        <div className="flex flex-col gap-3">
-          <h2 className="text-base font-medium">Nuevo gasto</h2>
-          <ExpenseForm
-            mode="create"
-            planId={planId}
-            members={members}
-            sessionMemberId={sessionMemberId}
-          />
-        </div>
-      ) : canEdit ? (
-        <p className="text-sm text-muted-foreground">
-          Agrega al menos {MIN_MEMBERS_TO_CREATE_EXPENSE} integrantes para
-          registrar gastos.
-        </p>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          Los gastos se pueden crear o editar solo cuando el plan está activo.
-        </p>
-      )}
+          <p className="text-sm text-muted-foreground">
+            Los gastos se consultan aquí. Solo se pueden crear o editar cuando
+            el plan está activo.
+          </p>
+        )
+      ) : null}
     </div>
   );
 }

@@ -42,6 +42,7 @@ export interface IPlanSettlement {
   highlightCompletePayments: boolean;
   showCompletePlan: boolean;
   canCompletePlan: boolean;
+  showSuggestedTransfers: boolean;
   members: ISettlementMember[];
   transfers: ISuggestedTransferView[];
   payments: IRecordedPaymentView[];
