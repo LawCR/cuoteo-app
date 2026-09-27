@@ -19,6 +19,7 @@ import { PlanMetadataForm } from "@/features/plans/components/PlanMetadataForm";
 import { PlanPhaseBadge } from "@/features/plans/components/PlanPhaseBadge";
 import { RemovePlanMemberButton } from "@/features/plans/components/RemovePlanMemberButton";
 import { getPlanForUser } from "@/features/plans/services/server/plan-service.server";
+import { CompletePaymentsButton } from "@/features/settlements/components/CompletePaymentsButton";
 import { MemberRemainingBadge } from "@/features/settlements/components/MemberRemainingBadge";
 import { RecordPaymentSheet } from "@/features/settlements/components/RecordPaymentSheet";
 import { SettlementBalanceSection } from "@/features/settlements/components/SettlementBalanceSection";
@@ -221,10 +222,19 @@ export default async function PlanDetailPage({
           </div>
         ) : null}
         {isBalance ? (
-          <MovePlanToActiveButton
-            planId={plan.id}
-            paymentCount={plan.paymentCount}
-          />
+          <div className="flex flex-col gap-3">
+            <MovePlanToActiveButton
+              planId={plan.id}
+              paymentCount={plan.paymentCount}
+            />
+            {settlement?.showCompletePayments ? (
+              <CompletePaymentsButton
+                planId={plan.id}
+                canComplete={settlement.canCompletePayments}
+                highlight={settlement.highlightCompletePayments}
+              />
+            ) : null}
+          </div>
         ) : null}
         {isCompleted ? (
           <p className="text-sm text-muted-foreground">

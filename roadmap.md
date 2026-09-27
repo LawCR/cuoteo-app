@@ -230,7 +230,7 @@ Objetivo: payments, tope, greedy, anular, cierre de creador.
   Criterio: cualquier registrado en Balance; prohibido en Completado.
   Rules: `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/money.mdc`
 
-- [ ] Completar pagos (solo creador)
+- [x] Completar pagos (solo creador)
   Criterio: asientos `MANUAL_CLOSE` en historial; saldos 0; el plan sigue en Balance; destacar si hay un solo registrado.
   Rules: `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/money.mdc` · `data-model.md`
 

@@ -1,9 +1,11 @@
 import { prisma } from "@/core/db";
 import { NotFoundError } from "@/core/errors/not-found.error";
+import { UnauthorizedError } from "@/core/errors/unauthorized.error";
 import { ValidationError } from "@/core/errors/validation.error";
 import { PEN_CENTS } from "@/features/settlements/constants/settlements.constants";
 import type { IMemberRemainingBalance } from "@/features/settlements/interfaces/remaining-balance.interface";
 import type {
+  ICompletePaymentsInput,
   IPlanSettlement,
   IRecordedPaymentView,
   IRecordPaymentInput,
@@ -11,9 +13,11 @@ import type {
   ISettlementPayoutDetails,
   ISuggestedTransferView,
   IVoidPaymentInput,
+  TPaymentKind,
 } from "@/features/settlements/interfaces/settlement.interface";
 import { computeMinTransfers } from "@/features/settlements/utils/min-transfers.utils";
 import {
+  getCompletePaymentsDenial,
   getPaymentCap,
   getRecordPaymentDenial,
 } from "@/features/settlements/utils/payment-rules.utils";
@@ -113,6 +117,7 @@ async function loadBalanceInputs(planId: string): Promise<{
     toMemberId: string;
     amount: number;
     createdAt: Date;
+    kind: TPaymentKind;
   }>;
 }> {
   const [expenseRows, paymentRows] = await Promise.all([
@@ -137,6 +142,7 @@ async function loadBalanceInputs(planId: string): Promise<{
         toMemberId: true,
         amount: true,
         createdAt: true,
+        kind: true,
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -157,6 +163,7 @@ async function loadBalanceInputs(planId: string): Promise<{
       toMemberId: payment.toMemberId,
       amount: toPenNumber(payment.amount),
       createdAt: payment.createdAt,
+      kind: payment.kind,
     })),
   };
 }
@@ -191,6 +198,7 @@ function buildRecordedPaymentViews(
     toMemberId: string;
     amount: number;
     createdAt: Date;
+    kind: TPaymentKind;
   }>,
 ): IRecordedPaymentView[] {
   const nameById = new Map(
@@ -203,6 +211,7 @@ function buildRecordedPaymentViews(
     toName: nameById.get(payment.toMemberId) ?? "Integrante",
     amount: payment.amount,
     createdAt: payment.createdAt,
+    kind: payment.kind,
   }));
 }
 
@@ -247,13 +256,23 @@ export async function getPlanSettlement(
     actorUserId,
     remainingByMemberId,
   );
+  const transfers = buildTransferViews(members);
+  const isCreator = plan.creatorUserId === actorUserId;
+  const isBalance = plan.phase === PlanPhase.BALANCE;
+  const registeredCount = plan.members.filter(
+    (member) => member.userId !== null,
+  ).length;
+  const canCompletePayments = isBalance && isCreator && transfers.length > 0;
 
   return {
     planId: plan.id,
     sessionMemberId: sessionMember.id,
-    canRecordPayments: plan.phase === PlanPhase.BALANCE,
+    canRecordPayments: isBalance,
+    showCompletePayments: isBalance && isCreator,
+    canCompletePayments,
+    highlightCompletePayments: canCompletePayments && registeredCount === 1,
     members,
-    transfers: buildTransferViews(members),
+    transfers,
     payments: buildRecordedPaymentViews(members, payments),
   };
 }
@@ -346,5 +365,50 @@ export async function voidPayment(input: IVoidPaymentInput): Promise<void> {
 
   await prisma.payment.delete({
     where: { id: payment.id },
+  });
+}
+
+export async function completePayments(
+  input: ICompletePaymentsInput,
+): Promise<void> {
+  const plan = await findAccessiblePlanWithMembers(
+    input.planId,
+    input.actorUserId,
+  );
+  const denial = getCompletePaymentsDenial(
+    plan.phase,
+    input.actorUserId,
+    plan.creatorUserId,
+  );
+
+  if (denial === "not_plan_creator") {
+    throw new UnauthorizedError(denial, { field: "planId" });
+  }
+
+  if (denial) {
+    throw new ValidationError(denial, { field: "planId" });
+  }
+
+  const { expenses, payments } = await loadBalanceInputs(plan.id);
+  const remaining = computeRemainingBalances(
+    plan.members.map((member) => member.id),
+    expenses,
+    payments,
+  );
+  const transfers = computeMinTransfers(remaining);
+
+  if (transfers.length === 0) {
+    throw new ValidationError("already_settled", { field: "planId" });
+  }
+
+  await prisma.payment.createMany({
+    data: transfers.map((transfer) => ({
+      planId: plan.id,
+      fromMemberId: transfer.fromMemberId,
+      toMemberId: transfer.toMemberId,
+      amount: new Prisma.Decimal(transfer.amount.toFixed(2)),
+      recordedByUserId: input.actorUserId,
+      kind: PaymentKind.MANUAL_CLOSE,
+    })),
   });
 }

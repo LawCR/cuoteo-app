@@ -22,18 +22,24 @@ export interface ISuggestedTransferView extends ISuggestedTransfer {
   toName: string;
 }
 
+export type TPaymentKind = "TRANSFER" | "MANUAL_CLOSE";
+
 export interface IRecordedPaymentView {
   id: string;
   fromName: string;
   toName: string;
   amount: number;
   createdAt: Date;
+  kind: TPaymentKind;
 }
 
 export interface IPlanSettlement {
   planId: string;
   sessionMemberId: string;
   canRecordPayments: boolean;
+  showCompletePayments: boolean;
+  canCompletePayments: boolean;
+  highlightCompletePayments: boolean;
   members: ISettlementMember[];
   transfers: ISuggestedTransferView[];
   payments: IRecordedPaymentView[];
@@ -53,12 +59,22 @@ export interface IVoidPaymentInput {
   paymentId: string;
 }
 
+export interface ICompletePaymentsInput {
+  actorUserId: string;
+  planId: string;
+}
+
 export type TRecordPaymentActionState = {
   error: string | null;
   success: boolean;
 };
 
 export type TVoidPaymentActionState = {
+  error: string | null;
+  success: boolean;
+};
+
+export type TCompletePaymentsActionState = {
   error: string | null;
   success: boolean;
 };

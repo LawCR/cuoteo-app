@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { VoidPaymentButton } from "@/features/settlements/components/VoidPaymentButton";
 import type { IRecordedPaymentView } from "@/features/settlements/interfaces/settlement.interface";
 import { MoneyText } from "@/shared/components/MoneyText";
+import { Badge } from "@/shared/components/ui/badge";
 import { formatLimaDate } from "@/shared/utils/lima-date.utils";
 
 interface IRecordedPaymentsListProps {
@@ -36,9 +37,14 @@ export function RecordedPaymentsList({
               {" pagó a "}
               <span className="font-medium">{payment.toName}</span>
             </p>
-            <p className="text-xs text-muted-foreground">
-              {formatLimaDate(payment.createdAt)}
-            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-xs text-muted-foreground">
+                {formatLimaDate(payment.createdAt)}
+              </p>
+              {payment.kind === "MANUAL_CLOSE" ? (
+                <Badge variant="secondary">Cierre</Badge>
+              ) : null}
+            </div>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
             <MoneyText amount={payment.amount} className="shrink-0 text-sm" />

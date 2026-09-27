@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { PlanPhase } from "@/generated/prisma/enums";
 import {
+  getCompletePaymentsDenial,
   getPaymentCap,
   getRecordPaymentDenial,
 } from "@/features/settlements/utils/payment-rules.utils";
@@ -12,6 +13,23 @@ describe("getRecordPaymentDenial", () => {
     expect(getRecordPaymentDenial(PlanPhase.COMPLETED)).toBe(
       "plan_not_in_balance",
     );
+  });
+});
+
+describe("getCompletePaymentsDenial", () => {
+  it("solo permite al creador en Balance", () => {
+    expect(
+      getCompletePaymentsDenial(PlanPhase.BALANCE, "user-1", "user-1"),
+    ).toBeNull();
+    expect(
+      getCompletePaymentsDenial(PlanPhase.BALANCE, "user-2", "user-1"),
+    ).toBe("not_plan_creator");
+    expect(
+      getCompletePaymentsDenial(PlanPhase.ACTIVE, "user-1", "user-1"),
+    ).toBe("plan_not_in_balance");
+    expect(
+      getCompletePaymentsDenial(PlanPhase.COMPLETED, "user-1", "user-1"),
+    ).toBe("plan_not_in_balance");
   });
 });
 

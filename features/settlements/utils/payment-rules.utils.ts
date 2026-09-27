@@ -3,11 +3,31 @@ import { PEN_CENTS } from "@/features/settlements/constants/settlements.constant
 
 export type TRecordPaymentDenial = "plan_not_in_balance";
 
+export type TCompletePaymentsDenial =
+  | "plan_not_in_balance"
+  | "not_plan_creator";
+
 export function getRecordPaymentDenial(
   phase: PlanPhase,
 ): TRecordPaymentDenial | null {
   if (phase !== PlanPhase.BALANCE) {
     return "plan_not_in_balance";
+  }
+
+  return null;
+}
+
+export function getCompletePaymentsDenial(
+  phase: PlanPhase,
+  actorUserId: string,
+  creatorUserId: string,
+): TCompletePaymentsDenial | null {
+  if (phase !== PlanPhase.BALANCE) {
+    return "plan_not_in_balance";
+  }
+
+  if (actorUserId !== creatorUserId) {
+    return "not_plan_creator";
   }
 
   return null;

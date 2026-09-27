@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NotFoundError } from "@/core/errors/not-found.error";
+import { UnauthorizedError } from "@/core/errors/unauthorized.error";
 import { ValidationError } from "@/core/errors/validation.error";
 import { PaymentKind, PlanPhase } from "@/generated/prisma/client";
 
@@ -9,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   paymentFindMany: vi.fn(),
   paymentFindFirst: vi.fn(),
   paymentCreate: vi.fn(),
+  paymentCreateMany: vi.fn(),
   paymentDelete: vi.fn(),
 }));
 
@@ -24,12 +26,14 @@ vi.mock("@/core/db", () => ({
       findMany: mocks.paymentFindMany,
       findFirst: mocks.paymentFindFirst,
       create: mocks.paymentCreate,
+      createMany: mocks.paymentCreateMany,
       delete: mocks.paymentDelete,
     },
   },
 }));
 
 import {
+  completePayments,
   getPlanSettlement,
   recordTransferPayment,
   voidPayment,
@@ -119,6 +123,9 @@ describe("getPlanSettlement", () => {
     const settlement = await getPlanSettlement(PLAN_ID, ACTOR_ID);
 
     expect(settlement.canRecordPayments).toBe(true);
+    expect(settlement.showCompletePayments).toBe(true);
+    expect(settlement.canCompletePayments).toBe(true);
+    expect(settlement.highlightCompletePayments).toBe(false);
     expect(settlement.members.map((member) => member.role)).toEqual([
       "creditor",
       "debtor",
@@ -150,6 +157,7 @@ describe("getPlanSettlement", () => {
         toMemberId: MEMBER_A,
         amount: "10.00",
         createdAt: new Date("2026-03-01"),
+        kind: PaymentKind.TRANSFER,
       },
     ]);
 
@@ -178,8 +186,30 @@ describe("getPlanSettlement", () => {
         toName: "Ana",
         amount: 10,
         createdAt: new Date("2026-03-01"),
+        kind: PaymentKind.TRANSFER,
       },
     ]);
+  });
+
+  it("destaca Completar pagos si hay un solo registrado", async () => {
+    const plan = makePlan();
+    plan.members = plan.members.filter((member) => member.id !== MEMBER_B);
+    mocks.planFindFirst.mockResolvedValue(plan);
+    mocks.expenseFindMany.mockResolvedValue([
+      {
+        paidByMemberId: MEMBER_A,
+        amount: "40.00",
+        shares: [
+          { memberId: MEMBER_A, shareAmount: "20.00" },
+          { memberId: MEMBER_C, shareAmount: "20.00" },
+        ],
+      },
+    ]);
+
+    const settlement = await getPlanSettlement(PLAN_ID, ACTOR_ID);
+
+    expect(settlement.highlightCompletePayments).toBe(true);
+    expect(settlement.canCompletePayments).toBe(true);
   });
 
   it("rechaza si el actor no pertenece al plan", async () => {
@@ -324,5 +354,93 @@ describe("voidPayment", () => {
       }),
     ).rejects.toBeInstanceOf(NotFoundError);
     expect(mocks.paymentDelete).not.toHaveBeenCalled();
+  });
+});
+
+describe("completePayments", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.planFindFirst.mockResolvedValue(makePlan());
+    mocks.expenseFindMany.mockResolvedValue([equalSplitExpense()]);
+    mocks.paymentFindMany.mockResolvedValue([]);
+    mocks.paymentCreateMany.mockResolvedValue({ count: 2 });
+  });
+
+  it("crea asientos MANUAL_CLOSE y no cambia la fase", async () => {
+    await completePayments({
+      actorUserId: ACTOR_ID,
+      planId: PLAN_ID,
+    });
+
+    expect(mocks.paymentCreateMany).toHaveBeenCalledWith({
+      data: [
+        expect.objectContaining({
+          planId: PLAN_ID,
+          fromMemberId: MEMBER_B,
+          toMemberId: MEMBER_A,
+          recordedByUserId: ACTOR_ID,
+          kind: PaymentKind.MANUAL_CLOSE,
+        }),
+        expect.objectContaining({
+          planId: PLAN_ID,
+          fromMemberId: MEMBER_C,
+          toMemberId: MEMBER_A,
+          recordedByUserId: ACTOR_ID,
+          kind: PaymentKind.MANUAL_CLOSE,
+        }),
+      ],
+    });
+    expect(mocks.paymentDelete).not.toHaveBeenCalled();
+  });
+
+  it("rechaza si los saldos ya están en cero", async () => {
+    mocks.paymentFindMany.mockResolvedValue([
+      {
+        id: "pay-1",
+        fromMemberId: MEMBER_B,
+        toMemberId: MEMBER_A,
+        amount: "30.00",
+        createdAt: new Date("2026-03-01"),
+        kind: PaymentKind.TRANSFER,
+      },
+      {
+        id: "pay-2",
+        fromMemberId: MEMBER_C,
+        toMemberId: MEMBER_A,
+        amount: "30.00",
+        createdAt: new Date("2026-03-02"),
+        kind: PaymentKind.TRANSFER,
+      },
+    ]);
+
+    await expect(
+      completePayments({
+        actorUserId: ACTOR_ID,
+        planId: PLAN_ID,
+      }),
+    ).rejects.toMatchObject({ message: "already_settled" });
+    expect(mocks.paymentCreateMany).not.toHaveBeenCalled();
+  });
+
+  it("rechaza si el actor no es el creador", async () => {
+    await expect(
+      completePayments({
+        actorUserId: "user-2",
+        planId: PLAN_ID,
+      }),
+    ).rejects.toBeInstanceOf(UnauthorizedError);
+    expect(mocks.paymentCreateMany).not.toHaveBeenCalled();
+  });
+
+  it("bloquea fuera de Balance", async () => {
+    mocks.planFindFirst.mockResolvedValue(makePlan(PlanPhase.COMPLETED));
+
+    await expect(
+      completePayments({
+        actorUserId: ACTOR_ID,
+        planId: PLAN_ID,
+      }),
+    ).rejects.toMatchObject({ message: "plan_not_in_balance" });
+    expect(mocks.paymentCreateMany).not.toHaveBeenCalled();
   });
 });
