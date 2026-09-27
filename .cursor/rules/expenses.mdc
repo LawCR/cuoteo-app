@@ -11,7 +11,7 @@ alwaysApply: false
 - Fecha = `createdAt`. Sin comprobante. CRUD de cualquier gasto por cualquier registrado miembro.
 - Alta de gastos solo con **≥ 2 integrantes**. Editar y borrar: Activo, aunque quede 1 integrante.
 - Tras salir/quitar, un gasto puede quedar sin integrantes (borde + aviso). No se puede pasar a Balance hasta asignar ≥ 1 persona o borrar el gasto.
-- Reparto del total: **gráfica de dona** por integrante (Activo y Completado; en Balance es secundaria respecto a saldos).
+- Reparto del total: **gráfica de dona** por integrante (Activo y Completado; en Balance es secundaria respecto a saldos). Gastos sin integrantes no entran al total ni a la dona.
 
 # Categorías e íconos
 

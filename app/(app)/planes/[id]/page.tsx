@@ -169,6 +169,7 @@ export default async function PlanDetailPage({
             <MovePlanToBalanceButton
               planId={plan.id}
               memberCount={plan.members.length}
+              expenseCount={expenses.length}
               incompleteExpenseTitles={expenses
                 .filter((expense) => expense.shareMemberIds.length === 0)
                 .map((expense) => expense.title)}
@@ -255,8 +256,8 @@ export default async function PlanDetailPage({
         <CardHeader>
           <CardTitle>Gastos</CardTitle>
           <CardDescription>
-            Concepto, monto, categoría y quién pagó. El reparto es igualitario
-            y puedes excluir integrantes.
+            Concepto, monto, categoría y quién pagó. Arriba ves el total y el
+            reparto por integrante.
           </CardDescription>
         </CardHeader>
         <CardContent>

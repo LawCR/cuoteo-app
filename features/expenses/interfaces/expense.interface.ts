@@ -11,6 +11,19 @@ export interface IExpenseShareItem {
   shareAmount: number;
 }
 
+export interface IMemberShareSlice {
+  memberId: string;
+  name: string;
+  amount: number;
+  chartIndex: number;
+}
+
+export interface IMemberShareBreakdown {
+  total: number;
+  incompleteCount: number;
+  slices: IMemberShareSlice[];
+}
+
 export interface IExpenseListItem {
   id: string;
   planId: string;

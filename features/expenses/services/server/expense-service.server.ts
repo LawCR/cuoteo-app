@@ -225,6 +225,12 @@ export async function listExpenseTitlesWithoutShareMembers(
   return expenses.map((expense) => expense.title);
 }
 
+export async function countExpensesForPlan(planId: string): Promise<number> {
+  return prisma.expense.count({
+    where: { planId },
+  });
+}
+
 export async function listExpensesForPlan(
   planId: string,
   actorUserId: string,

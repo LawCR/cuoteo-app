@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
   includeMemberInPastExpenses: vi.fn(),
   excludeMemberFromPlanExpenses: vi.fn(),
   listExpenseTitlesWithoutShareMembers: vi.fn(),
+  countExpensesForPlan: vi.fn(),
   transaction: vi.fn(),
 }));
 
@@ -24,6 +25,7 @@ vi.mock("@/features/expenses/services/server/expense-service.server", () => ({
   includeMemberInPastExpenses: mocks.includeMemberInPastExpenses,
   excludeMemberFromPlanExpenses: mocks.excludeMemberFromPlanExpenses,
   listExpenseTitlesWithoutShareMembers: mocks.listExpenseTitlesWithoutShareMembers,
+  countExpensesForPlan: mocks.countExpensesForPlan,
 }));
 
 vi.mock("@/core/db", () => ({
@@ -247,6 +249,7 @@ describe("movePlanToBalance", () => {
     vi.clearAllMocks();
     mocks.planFindFirst.mockResolvedValue(makePlan());
     mocks.planMemberCount.mockResolvedValue(2);
+    mocks.countExpensesForPlan.mockResolvedValue(1);
     mocks.listExpenseTitlesWithoutShareMembers.mockResolvedValue([]);
     mocks.planUpdate.mockResolvedValue(makePlan(PlanPhase.BALANCE));
   });
@@ -273,6 +276,18 @@ describe("movePlanToBalance", () => {
         planId: PLAN_ID,
       }),
     ).rejects.toMatchObject({ message: "not_enough_members" });
+    expect(mocks.planUpdate).not.toHaveBeenCalled();
+  });
+
+  it("bloquea sin gastos", async () => {
+    mocks.countExpensesForPlan.mockResolvedValue(0);
+
+    await expect(
+      movePlanToBalance({
+        actorUserId: MEMBER_USER_ID,
+        planId: PLAN_ID,
+      }),
+    ).rejects.toMatchObject({ message: "not_enough_expenses" });
     expect(mocks.planUpdate).not.toHaveBeenCalled();
   });
 

@@ -41,6 +41,13 @@ export async function movePlanToBalanceAction(
         };
       }
 
+      if (error.message === "not_enough_expenses") {
+        return {
+          error: "Necesitas al menos 1 gasto para pasar a Balance.",
+          success: false,
+        };
+      }
+
       if (error.message === "expenses_missing_share_members") {
         const titles = Array.isArray(error.meta?.expenseTitles)
           ? error.meta.expenseTitles.filter(

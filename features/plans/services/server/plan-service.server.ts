@@ -4,6 +4,7 @@ import { NotFoundError } from "@/core/errors/not-found.error";
 import { UnauthorizedError } from "@/core/errors/unauthorized.error";
 import { ValidationError } from "@/core/errors/validation.error";
 import {
+  countExpensesForPlan,
   excludeMemberFromPlanExpenses,
   includeMemberInPastExpenses,
   listExpenseTitlesWithoutShareMembers,
@@ -412,11 +413,14 @@ export async function movePlanToBalance(
   const memberCount = await prisma.planMember.count({
     where: { planId: plan.id },
   });
-  const expensesWithoutShareMembers =
-    await listExpenseTitlesWithoutShareMembers(plan.id);
+  const [expenseCount, expensesWithoutShareMembers] = await Promise.all([
+    countExpensesForPlan(plan.id),
+    listExpenseTitlesWithoutShareMembers(plan.id),
+  ]);
   const denial = getMovePlanToBalanceDenial({
     phase: plan.phase,
     memberCount,
+    expenseCount,
     hasExpensesWithoutShareMembers: expensesWithoutShareMembers.length > 0,
   });
 
@@ -426,6 +430,10 @@ export async function movePlanToBalance(
 
   if (denial === "not_enough_members") {
     throw new ValidationError("not_enough_members", { field: "planId" });
+  }
+
+  if (denial === "not_enough_expenses") {
+    throw new ValidationError("not_enough_expenses", { field: "planId" });
   }
 
   if (denial === "expenses_missing_share_members") {

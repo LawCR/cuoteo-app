@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   expenseCreate: vi.fn(),
   expenseUpdate: vi.fn(),
   expenseDelete: vi.fn(),
+  expenseCount: vi.fn(),
   expenseShareDeleteMany: vi.fn(),
   transaction: vi.fn(),
 }));
@@ -25,6 +26,7 @@ vi.mock("@/core/db", () => ({
       create: mocks.expenseCreate,
       update: mocks.expenseUpdate,
       delete: mocks.expenseDelete,
+      count: mocks.expenseCount,
     },
     expenseShare: {
       deleteMany: mocks.expenseShareDeleteMany,
@@ -35,6 +37,7 @@ vi.mock("@/core/db", () => ({
 
 import { prisma } from "@/core/db";
 import {
+  countExpensesForPlan,
   createExpense,
   deleteExpense,
   excludeMemberFromPlanExpenses,
@@ -530,6 +533,17 @@ describe("listExpenseTitlesWithoutShareMembers", () => {
       },
       select: { title: true },
       orderBy: { createdAt: "asc" },
+    });
+  });
+});
+
+describe("countExpensesForPlan", () => {
+  it("cuenta los gastos del plan", async () => {
+    mocks.expenseCount.mockResolvedValue(2);
+
+    await expect(countExpensesForPlan(PLAN_ID)).resolves.toBe(2);
+    expect(mocks.expenseCount).toHaveBeenCalledWith({
+      where: { planId: PLAN_ID },
     });
   });
 });

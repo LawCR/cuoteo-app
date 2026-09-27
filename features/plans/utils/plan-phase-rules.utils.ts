@@ -1,9 +1,13 @@
-import { MIN_MEMBERS_TO_ENTER_BALANCE } from "@/features/plans/constants/plans.constants";
+import {
+  MIN_EXPENSES_TO_ENTER_BALANCE,
+  MIN_MEMBERS_TO_ENTER_BALANCE,
+} from "@/features/plans/constants/plans.constants";
 import { PlanPhase } from "@/generated/prisma/enums";
 
 export type TMovePlanToBalanceDenial =
   | "plan_not_active"
   | "not_enough_members"
+  | "not_enough_expenses"
   | "expenses_missing_share_members";
 
 export type TMovePlanToActiveDenial =
@@ -13,6 +17,7 @@ export type TMovePlanToActiveDenial =
 export function getMovePlanToBalanceDenial(input: {
   phase: PlanPhase;
   memberCount: number;
+  expenseCount: number;
   hasExpensesWithoutShareMembers: boolean;
 }): TMovePlanToBalanceDenial | null {
   if (input.phase !== PlanPhase.ACTIVE) {
@@ -21,6 +26,10 @@ export function getMovePlanToBalanceDenial(input: {
 
   if (input.memberCount < MIN_MEMBERS_TO_ENTER_BALANCE) {
     return "not_enough_members";
+  }
+
+  if (input.expenseCount < MIN_EXPENSES_TO_ENTER_BALANCE) {
+    return "not_enough_expenses";
   }
 
   if (input.hasExpensesWithoutShareMembers) {

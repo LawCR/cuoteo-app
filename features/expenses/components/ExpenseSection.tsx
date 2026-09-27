@@ -4,11 +4,13 @@ import { useState } from "react";
 import type { ReactElement } from "react";
 import { ExpenseForm } from "@/features/expenses/components/ExpenseForm";
 import { ExpenseList } from "@/features/expenses/components/ExpenseList";
+import { ExpenseShareChart } from "@/features/expenses/components/ExpenseShareChart";
 import { MIN_MEMBERS_TO_CREATE_EXPENSE } from "@/features/expenses/constants/expenses.constants";
 import type {
   IExpenseListItem,
   IExpenseMemberOption,
 } from "@/features/expenses/interfaces/expense.interface";
+import { buildMemberShareBreakdown } from "@/features/expenses/utils/expense-share-chart.utils";
 
 interface IExpenseSectionProps {
   planId: string;
@@ -31,9 +33,30 @@ export function ExpenseSection({
   const editingExpense = expenses.find(
     (expense) => expense.id === editingExpenseId,
   );
+  const shareBreakdown = buildMemberShareBreakdown(members, expenses);
 
   return (
     <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-3">
+        <h2 className="text-base font-medium">Reparto</h2>
+        {expenses.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Cuando haya gastos, aquí verás el total y cuánto le toca a cada
+            integrante.
+          </p>
+        ) : (
+          <>
+            <ExpenseShareChart breakdown={shareBreakdown} />
+            {shareBreakdown.incompleteCount > 0 ? (
+              <p role="alert" className="text-sm text-destructive">
+                {shareBreakdown.incompleteCount === 1
+                  ? "Hay 1 gasto sin integrantes. No entra en el total hasta que elijas quiénes lo dividen."
+                  : `Hay ${shareBreakdown.incompleteCount} gastos sin integrantes. No entran en el total hasta que elijas quiénes los dividen.`}
+              </p>
+            ) : null}
+          </>
+        )}
+      </div>
       <ExpenseList
         expenses={expenses}
         canEdit={canEdit}

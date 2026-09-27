@@ -11,6 +11,7 @@ describe("getMovePlanToBalanceDenial", () => {
       getMovePlanToBalanceDenial({
         phase: PlanPhase.ACTIVE,
         memberCount: 2,
+        expenseCount: 1,
         hasExpensesWithoutShareMembers: false,
       }),
     ).toBeNull();
@@ -21,6 +22,7 @@ describe("getMovePlanToBalanceDenial", () => {
       getMovePlanToBalanceDenial({
         phase: PlanPhase.ACTIVE,
         memberCount: 1,
+        expenseCount: 0,
         hasExpensesWithoutShareMembers: false,
       }),
     ).toBe("not_enough_members");
@@ -31,6 +33,7 @@ describe("getMovePlanToBalanceDenial", () => {
       getMovePlanToBalanceDenial({
         phase: PlanPhase.BALANCE,
         memberCount: 3,
+        expenseCount: 1,
         hasExpensesWithoutShareMembers: false,
       }),
     ).toBe("plan_not_active");
@@ -41,9 +44,21 @@ describe("getMovePlanToBalanceDenial", () => {
       getMovePlanToBalanceDenial({
         phase: PlanPhase.COMPLETED,
         memberCount: 3,
+        expenseCount: 1,
         hasExpensesWithoutShareMembers: false,
       }),
     ).toBe("plan_not_active");
+  });
+
+  it("bloquea Activo sin gastos", () => {
+    expect(
+      getMovePlanToBalanceDenial({
+        phase: PlanPhase.ACTIVE,
+        memberCount: 2,
+        expenseCount: 0,
+        hasExpensesWithoutShareMembers: false,
+      }),
+    ).toBe("not_enough_expenses");
   });
 
   it("bloquea si hay gastos sin integrantes", () => {
@@ -51,6 +66,7 @@ describe("getMovePlanToBalanceDenial", () => {
       getMovePlanToBalanceDenial({
         phase: PlanPhase.ACTIVE,
         memberCount: 2,
+        expenseCount: 1,
         hasExpensesWithoutShareMembers: true,
       }),
     ).toBe("expenses_missing_share_members");

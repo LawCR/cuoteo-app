@@ -4,7 +4,10 @@ import { useState, useTransition } from "react";
 import type { ReactElement } from "react";
 import { toast } from "sonner";
 import { movePlanToBalanceAction } from "@/features/plans/actions/move-plan-to-balance.action";
-import { MIN_MEMBERS_TO_ENTER_BALANCE } from "@/features/plans/constants/plans.constants";
+import {
+  MIN_EXPENSES_TO_ENTER_BALANCE,
+  MIN_MEMBERS_TO_ENTER_BALANCE,
+} from "@/features/plans/constants/plans.constants";
 import { formatExpensesMissingShareMembersMessage } from "@/features/plans/utils/plan-balance-messages.utils";
 import {
   AlertDialog,
@@ -20,17 +23,20 @@ import { Button } from "@/shared/components/ui/button";
 interface IMovePlanToBalanceButtonProps {
   planId: string;
   memberCount: number;
+  expenseCount: number;
   incompleteExpenseTitles: string[];
 }
 
 export function MovePlanToBalanceButton({
   planId,
   memberCount,
+  expenseCount,
   incompleteExpenseTitles,
 }: IMovePlanToBalanceButtonProps): ReactElement {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const canMove = memberCount >= MIN_MEMBERS_TO_ENTER_BALANCE;
+  const hasEnoughMembers = memberCount >= MIN_MEMBERS_TO_ENTER_BALANCE;
+  const hasEnoughExpenses = expenseCount >= MIN_EXPENSES_TO_ENTER_BALANCE;
 
   function handleOpen(): void {
     if (incompleteExpenseTitles.length > 0) {
@@ -59,7 +65,7 @@ export function MovePlanToBalanceButton({
     });
   }
 
-  if (!canMove) {
+  if (!hasEnoughMembers) {
     return (
       <div className="flex flex-col gap-1">
         <Button type="button" disabled className="min-h-11 w-fit">
@@ -68,6 +74,19 @@ export function MovePlanToBalanceButton({
         <p className="text-sm text-muted-foreground">
           Necesitas al menos {MIN_MEMBERS_TO_ENTER_BALANCE} integrantes para
           pasar a Balance.
+        </p>
+      </div>
+    );
+  }
+
+  if (!hasEnoughExpenses) {
+    return (
+      <div className="flex flex-col gap-1">
+        <Button type="button" disabled className="min-h-11 w-fit">
+          Pasar a Balance
+        </Button>
+        <p className="text-sm text-muted-foreground">
+          Necesitas al menos 1 gasto para pasar a Balance.
         </p>
       </div>
     );

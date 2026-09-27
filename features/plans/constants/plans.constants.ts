@@ -20,3 +20,5 @@ export const DEFAULT_PLAN_ICON: ExpenseCategory = DEFAULT_EXPENSE_CATEGORY;
 export const GHOST_NAME_MAX_LENGTH = 80;
 
 export const MIN_MEMBERS_TO_ENTER_BALANCE = 2;
+
+export const MIN_EXPENSES_TO_ENTER_BALANCE = 1;

@@ -198,7 +198,7 @@ Objetivo: split igualitario, exclusión, tardío, gráfica; habilita la guarda �
   Criterio: se borran gastos que pagó; unsplit + recálculo en los demás; se borra el miembro.
   Rules: `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/money.mdc`
 
-- [ ] Total y gráfica de dona por integrante; CTA Balance exige ≥ 1 gasto
+- [x] Total y gráfica de dona por integrante; CTA Balance exige ≥ 1 gasto
   Criterio: dona del reparto; botón bloqueado con 0 gastos; ≥ 2 miembros.
   Rules: `.cursor/rules/plan-permissions.mdc` · `.cursor/rules/app-routing.mdc` · `.cursor/rules/expenses.mdc`
 
