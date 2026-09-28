@@ -19,14 +19,17 @@ import { PlanMemberList } from "@/features/plans/components/PlanMemberList";
 import { PlanMetadataForm } from "@/features/plans/components/PlanMetadataForm";
 import { PlanPhaseBadge } from "@/features/plans/components/PlanPhaseBadge";
 import { RemovePlanMemberButton } from "@/features/plans/components/RemovePlanMemberButton";
+import { SharePlanWhatsAppButton } from "@/features/plans/components/SharePlanWhatsAppButton";
 import { WipePlanPaymentsButton } from "@/features/plans/components/WipePlanPaymentsButton";
 import { getPlanForUser } from "@/features/plans/services/server/plan-service.server";
+import { buildPlanAbsoluteUrl } from "@/features/plans/utils/plan-url.utils";
 import { CompletePaymentsButton } from "@/features/settlements/components/CompletePaymentsButton";
 import { CompletePlanButton } from "@/features/settlements/components/CompletePlanButton";
 import { MemberRemainingBadge } from "@/features/settlements/components/MemberRemainingBadge";
 import { RecordPaymentSheet } from "@/features/settlements/components/RecordPaymentSheet";
 import { SettlementBalanceSection } from "@/features/settlements/components/SettlementBalanceSection";
 import { getPlanSettlement } from "@/features/settlements/services/server/settlement-service.server";
+import { buildWhatsAppBalanceText } from "@/features/settlements/utils/whatsapp-balance-text.utils";
 import { FriendRequestStatus, PlanPhase } from "@/generated/prisma/enums";
 import {
   Card,
@@ -230,6 +233,25 @@ export default async function PlanDetailPage({
       No encontramos tu membresía en este plan.
     </p>
   );
+  const whatsAppShareText = settlement
+    ? buildWhatsAppBalanceText({
+        planName: plan.name,
+        planUrl: buildPlanAbsoluteUrl(plan.id),
+        members: settlement.members.map((member) => ({
+          name: member.name,
+          remaining: member.remaining,
+          role: member.role,
+        })),
+        transfers: settlement.transfers.map((transfer) => ({
+          fromName: transfer.fromName,
+          toName: transfer.toName,
+          amount: transfer.amount,
+        })),
+      })
+    : null;
+  const shareWhatsAppButton = whatsAppShareText ? (
+    <SharePlanWhatsAppButton text={whatsAppShareText} />
+  ) : null;
   const settlementSection = settlement ? (
     <SettlementBalanceSection
       planId={plan.id}
@@ -313,12 +335,16 @@ export default async function PlanDetailPage({
                 canComplete={settlement.canCompletePlan}
               />
             ) : null}
+            {shareWhatsAppButton}
           </div>
         ) : null}
         {isCompleted ? (
-          <p className="text-sm text-muted-foreground">
-            Este plan está completado y no se puede modificar.
-          </p>
+          <div className="flex w-full max-w-4xl flex-col gap-3">
+            <p className="text-sm text-muted-foreground">
+              Este plan está completado y no se puede modificar.
+            </p>
+            {shareWhatsAppButton}
+          </div>
         ) : null}
       </div>
 

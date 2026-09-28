@@ -262,7 +262,7 @@ Objetivo: dashboard real, listado `/planes`, WhatsApp, nav con planes vivos.
   Criterio: eliminar solo creador, cualquier fase, cascade.
   Rules: `.cursor/rules/app-routing.mdc` · `.cursor/rules/plan-permissions.mdc`
 
-- [ ] Compartir WhatsApp (texto de balance + URL del plan)
+- [x] Compartir WhatsApp (texto de balance + URL del plan)
   Criterio: Balance y Completado; `wa.me` o Share API; el link exige login (fantasmas no entran).
   Rules: `.cursor/rules/app-routing.mdc` · `.cursor/rules/money.mdc` · `.cursor/rules/product-mvp.mdc`
 

@@ -28,6 +28,8 @@
   --warning-foreground: oklch(0.3 0.06 75);
   --info: oklch(0.5 0.1 240);
   --info-foreground: oklch(0.99 0.01 240);
+  --whatsapp: oklch(0.72 0.19 145);
+  --whatsapp-foreground: oklch(0.99 0.01 145);
   --border: oklch(0.9 0.01 250);
   --input: oklch(0.9 0.01 250);
   --ring: oklch(0.48 0.1 192);
@@ -73,6 +75,8 @@
   --warning-foreground: oklch(0.25 0.06 75);
   --info: oklch(0.7 0.1 240);
   --info-foreground: oklch(0.2 0.04 240);
+  --whatsapp: oklch(0.72 0.19 145);
+  --whatsapp-foreground: oklch(0.99 0.01 145);
   --border: oklch(0.3 0.02 250);
   --input: oklch(0.3 0.02 250);
   --ring: oklch(0.72 0.1 192);
@@ -121,6 +125,8 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+  --color-whatsapp: var(--whatsapp);
+  --color-whatsapp-foreground: var(--whatsapp-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
