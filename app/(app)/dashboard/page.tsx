@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PlusIcon } from "lucide-react";
+import type { Metadata } from "next";
 import type { ReactElement, ReactNode } from "react";
 import { requireAppUser } from "@/core/auth/app-user.utils";
 import { DashboardFriendsPreview } from "@/features/friends/components/DashboardFriendsPreview";
@@ -13,6 +14,14 @@ import { PlanPhase } from "@/generated/prisma/enums";
 import { MoneyText } from "@/shared/components/MoneyText";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
+import { buildPageMetadata } from "@/shared/utils/page-metadata.utils";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "Inicio",
+  description:
+    "Resumen de tus planes activos, saldos pendientes y amigos en Cuoteo.",
+  path: "/dashboard",
+});
 
 interface IKpiTileProps {
   label: string;

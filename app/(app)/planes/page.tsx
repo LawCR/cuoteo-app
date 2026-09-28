@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import type { ReactElement } from "react";
 import { PlusIcon } from "lucide-react";
 import { requireAppUser } from "@/core/auth/app-user.utils";
@@ -19,6 +20,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import { buildPageMetadata } from "@/shared/utils/page-metadata.utils";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "Planes",
+  description:
+    "Lista tus planes, filtra por fase y crea uno nuevo para dividir gastos en soles.",
+  path: "/planes",
+});
 
 interface IPlansPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

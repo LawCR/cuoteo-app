@@ -1,4 +1,5 @@
 import { currentUser } from "@clerk/nextjs/server";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import type { ReactElement } from "react";
 import { getAppUser } from "@/core/auth/app-user.utils";
@@ -11,6 +12,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import { buildPageMetadata } from "@/shared/utils/page-metadata.utils";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "Completa tu perfil",
+  description:
+    "Elige usuario, teléfono y datos de cobro para identificarte en Cuoteo.",
+  path: "/onboarding",
+});
 
 export default async function OnboardingPage(): Promise<ReactElement> {
   const appUser = await getAppUser();

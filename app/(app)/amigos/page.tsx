@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import type { ReactElement } from "react";
 import { UserPlusIcon } from "lucide-react";
 import { requireAppUser } from "@/core/auth/app-user.utils";
@@ -12,6 +13,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import { buildPageMetadata } from "@/shared/utils/page-metadata.utils";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "Amigos",
+  description:
+    "Agrega amigos por usuario o correo y gestiona tu lista en Cuoteo.",
+  path: "/amigos",
+});
 
 export default async function FriendsPage(): Promise<ReactElement> {
   const user = await requireAppUser();

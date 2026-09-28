@@ -45,6 +45,8 @@ type TPlanMetadataFormProps =
       planId: string;
       defaultValues: TPlanMetadataFormData;
       readOnly: boolean;
+      onCancel?: () => void;
+      onSaved?: () => void;
     };
 
 export function PlanMetadataForm(props: TPlanMetadataFormProps): ReactElement {
@@ -83,6 +85,7 @@ export function PlanMetadataForm(props: TPlanMetadataFormProps): ReactElement {
 
     if (result.success) {
       toast.success('Plan actualizado');
+      props.onSaved?.();
     }
   }
 
@@ -155,20 +158,37 @@ export function PlanMetadataForm(props: TPlanMetadataFormProps): ReactElement {
         />
 
         {readOnly ? null : (
-          <Button
-            type='submit'
-            size='lg'
-            disabled={isSubmitting}
-            className='min-h-11 w-full sm:w-auto'
-          >
-            {isSubmitting
-              ? isEdit
-                ? 'Guardando…'
-                : 'Creando…'
-              : isEdit
-                ? 'Guardar cambios'
-                : 'Crear plan'}
-          </Button>
+          <div className='flex flex-col gap-2 sm:flex-row sm:flex-wrap'>
+            {isEdit && props.onCancel ? (
+              <Button
+                type='button'
+                variant='outline'
+                size='lg'
+                disabled={isSubmitting}
+                className='min-h-11 w-full sm:w-auto'
+                onClick={() => {
+                  form.reset(props.defaultValues);
+                  props.onCancel?.();
+                }}
+              >
+                Cancelar
+              </Button>
+            ) : null}
+            <Button
+              type='submit'
+              size='lg'
+              disabled={isSubmitting}
+              className='min-h-11 w-full sm:w-auto'
+            >
+              {isSubmitting
+                ? isEdit
+                  ? 'Guardando…'
+                  : 'Creando…'
+                : isEdit
+                  ? 'Guardar cambios'
+                  : 'Crear plan'}
+            </Button>
+          </div>
         )}
       </form>
     </Form>

@@ -4,6 +4,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { env } from "@/core/env";
 import { ThemeProvider } from "@/shared/components/ThemeProvider";
 import { Toaster } from "@/shared/components/ui/sonner";
+import {
+  APP_DEFAULT_DESCRIPTION,
+  APP_NAME,
+} from "@/shared/utils/page-metadata.utils";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,8 +21,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Cuoteo",
-  description: "Divide gastos en grupo y cobra en Perú.",
+  metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
+  title: {
+    default: APP_NAME,
+    template: `%s | ${APP_NAME}`,
+  },
+  description: APP_DEFAULT_DESCRIPTION,
+  openGraph: {
+    title: APP_NAME,
+    description: APP_DEFAULT_DESCRIPTION,
+    siteName: APP_NAME,
+    locale: "es_PE",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: APP_NAME,
+    description: APP_DEFAULT_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import type { ReactElement } from "react";
 import { requireAppUser } from "@/core/auth/app-user.utils";
 import { ProfileForm } from "@/features/profile/components/ProfileForm";
@@ -11,6 +12,14 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Label } from "@/shared/components/ui/label";
+import { buildPageMetadata } from "@/shared/utils/page-metadata.utils";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "Perfil",
+  description:
+    "Actualiza tu nombre, teléfono, datos de cobro y el tema de Cuoteo.",
+  path: "/perfil",
+});
 
 export default async function ProfilePage(): Promise<ReactElement> {
   const user = await requireAppUser();

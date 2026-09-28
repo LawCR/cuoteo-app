@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import type { ReactElement } from "react";
 import { PlanMetadataForm } from "@/features/plans/components/PlanMetadataForm";
 import {
@@ -9,6 +10,14 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { ArrowLeftIcon } from 'lucide-react';
+import { buildPageMetadata } from "@/shared/utils/page-metadata.utils";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "Nuevo plan",
+  description:
+    "Crea un plan con nombre e ícono para empezar a dividir gastos en grupo.",
+  path: "/planes/nuevo",
+});
 
 export default function NewPlanPage(): ReactElement {
   return (

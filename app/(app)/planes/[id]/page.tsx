@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { ReactElement } from "react";
 import { requireAppUser } from "@/core/auth/app-user.utils";
@@ -15,9 +16,8 @@ import { LeavePlanButton } from "@/features/plans/components/LeavePlanButton";
 import { MovePlanToActiveButton } from "@/features/plans/components/MovePlanToActiveButton";
 import { MovePlanToBalanceButton } from "@/features/plans/components/MovePlanToBalanceButton";
 import { PlanHistoryTabs } from "@/features/plans/components/PlanHistoryTabs";
+import { PlanIdentitySection } from "@/features/plans/components/PlanIdentitySection";
 import { PlanMemberList } from "@/features/plans/components/PlanMemberList";
-import { PlanMetadataForm } from "@/features/plans/components/PlanMetadataForm";
-import { PlanPhaseBadge } from "@/features/plans/components/PlanPhaseBadge";
 import { RemovePlanMemberButton } from "@/features/plans/components/RemovePlanMemberButton";
 import { SharePlanWhatsAppButton } from "@/features/plans/components/SharePlanWhatsAppButton";
 import { WipePlanPaymentsButton } from "@/features/plans/components/WipePlanPaymentsButton";
@@ -39,9 +39,38 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { formatLimaDate } from "@/shared/utils/lima-date.utils";
+import { buildPageMetadata } from "@/shared/utils/page-metadata.utils";
 
 interface IPlanDetailPageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: IPlanDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+
+  try {
+    const user = await requireAppUser();
+    const plan = await getPlanForUser(id, user.id);
+
+    return buildPageMetadata({
+      title: plan.name,
+      description: `Gastos, integrantes y liquidación de ${plan.name} en Cuoteo. Divide en soles y cobra en Perú.`,
+      path: `/planes/${id}`,
+    });
+  } catch (error: unknown) {
+    if (error instanceof NotFoundError) {
+      return buildPageMetadata({
+        title: "Plan",
+        description:
+          "Consulta un plan de Cuoteo para dividir gastos en grupo y liquidar en soles.",
+        path: `/planes/${id}`,
+      });
+    }
+
+    throw error;
+  }
 }
 
 export default async function PlanDetailPage({
@@ -286,10 +315,13 @@ export default async function PlanDetailPage({
         >
           Volver a planes
         </Link>
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-semibold">{plan.name}</h1>
-          <PlanPhaseBadge phase={plan.phase} />
-        </div>
+        <PlanIdentitySection
+          planId={plan.id}
+          name={plan.name}
+          phase={plan.phase}
+          defaultValues={{ name: plan.name, icon: plan.icon }}
+          canEdit={canEdit}
+        />
         <p className="text-sm text-muted-foreground">
           Creado el {formatLimaDate(plan.createdAt)}
           {isCreator ? " · Eres el creador" : null}
@@ -347,27 +379,6 @@ export default async function PlanDetailPage({
           </div>
         ) : null}
       </div>
-
-      <Card className="max-w-4xl">
-        <CardHeader>
-          <CardTitle>Nombre e ícono</CardTitle>
-          <CardDescription>
-            {isCompleted
-              ? "Este plan está completado. No se puede modificar."
-              : canEdit
-                ? "Puedes cambiar el nombre y el ícono mientras el plan esté activo."
-                : "El nombre y el ícono se pueden cambiar solo cuando el plan está activo."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <PlanMetadataForm
-            mode="edit"
-            planId={plan.id}
-            defaultValues={{ name: plan.name, icon: plan.icon }}
-            readOnly={!canEdit}
-          />
-        </CardContent>
-      </Card>
 
       <Card className="max-w-4xl">
         <CardHeader>

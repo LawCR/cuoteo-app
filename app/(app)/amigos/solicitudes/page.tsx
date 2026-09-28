@@ -1,9 +1,19 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import type { ReactElement } from "react";
 import { requireAppUser } from "@/core/auth/app-user.utils";
 import { FriendRequestInboxList } from "@/features/friends/components/FriendRequestInboxList";
 import { listFriendRequests } from "@/features/friends/services/server/friend-request-service.server";
 import { ArrowLeftIcon } from "lucide-react";
+import { buildPageMetadata } from "@/shared/utils/page-metadata.utils";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "Solicitudes",
+  description:
+    "Acepta o rechaza solicitudes de amistad y revisa las que enviaste en Cuoteo.",
+  path: "/amigos/solicitudes",
+});
+
 export default async function FriendRequestsPage(): Promise<ReactElement> {
   const user = await requireAppUser();
   const inbox = await listFriendRequests(user.id);
