@@ -18,6 +18,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
@@ -25,11 +26,13 @@ import { Input } from "@/shared/components/ui/input";
 interface IAddGhostToPlanFormProps {
   planId: string;
   hasExpenses: boolean;
+  onSuccess?: () => void;
 }
 
 export function AddGhostToPlanForm({
   planId,
   hasExpenses,
+  onSuccess,
 }: IAddGhostToPlanFormProps): ReactElement {
   const [choiceOpen, setChoiceOpen] = useState(false);
   const form = useForm<TAddGhostToPlanFormData>({
@@ -51,6 +54,7 @@ export function AddGhostToPlanForm({
       toast.success("Invitado agregado al plan");
       form.reset({ planId, ghostName: "", includeInPastExpenses: false });
       setChoiceOpen(false);
+      onSuccess?.();
     }
   }
 
@@ -83,13 +87,14 @@ export function AddGhostToPlanForm({
       <Form {...form}>
         <form
           onSubmit={onSubmit}
-          className="flex flex-col gap-4 sm:flex-row sm:items-end"
+          className="flex flex-col gap-4"
         >
           <FormField
             control={form.control}
             name="ghostName"
             render={({ field }) => (
               <FormItem className="w-full">
+                <FormLabel>Nombre</FormLabel>
                 <FormControl>
                   <Input
                     autoComplete="off"

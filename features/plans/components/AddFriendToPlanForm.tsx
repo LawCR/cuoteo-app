@@ -34,12 +34,14 @@ interface IAddFriendToPlanFormProps {
   planId: string;
   friends: IPlanFriendOption[];
   hasExpenses: boolean;
+  onSuccess?: () => void;
 }
 
 export function AddFriendToPlanForm({
   planId,
   friends,
   hasExpenses,
+  onSuccess,
 }: IAddFriendToPlanFormProps): ReactElement {
   const [choiceOpen, setChoiceOpen] = useState(false);
   const form = useForm<TAddFriendToPlanFormData>({
@@ -69,6 +71,7 @@ export function AddFriendToPlanForm({
         includeInPastExpenses: false,
       });
       setChoiceOpen(false);
+      onSuccess?.();
     }
   }
 
@@ -116,7 +119,7 @@ export function AddFriendToPlanForm({
       <Form {...form}>
         <form
           onSubmit={onSubmit}
-          className="flex flex-col gap-4 sm:flex-row sm:items-end"
+          className="flex flex-col gap-4"
         >
           <FormField
             control={form.control}

@@ -1,8 +1,9 @@
 "use client";
 
+import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import type { ReactElement } from "react";
-import { ExpenseForm } from "@/features/expenses/components/ExpenseForm";
+import { ExpenseFormSheet } from "@/features/expenses/components/ExpenseFormSheet";
 import { ExpenseList } from "@/features/expenses/components/ExpenseList";
 import { ExpenseShareChart } from "@/features/expenses/components/ExpenseShareChart";
 import { MIN_MEMBERS_TO_CREATE_EXPENSE } from "@/features/expenses/constants/expenses.constants";
@@ -11,6 +12,7 @@ import type {
   IExpenseMemberOption,
 } from "@/features/expenses/interfaces/expense.interface";
 import { buildMemberShareBreakdown } from "@/features/expenses/utils/expense-share-chart.utils";
+import { Button } from "@/shared/components/ui/button";
 
 interface IExpenseSectionProps {
   planId: string;
@@ -33,6 +35,7 @@ export function ExpenseSection({
   showList = true,
   showChartTitle = true,
 }: IExpenseSectionProps): ReactElement {
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const canCreateExpenses =
     canEdit && members.length >= MIN_MEMBERS_TO_CREATE_EXPENSE;
@@ -40,6 +43,23 @@ export function ExpenseSection({
     (expense) => expense.id === editingExpenseId,
   );
   const shareBreakdown = buildMemberShareBreakdown(members, expenses);
+
+  function openCreateForm(): void {
+    setEditingExpenseId(null);
+    setIsFormOpen(true);
+  }
+
+  function openEditForm(expense: IExpenseListItem): void {
+    setEditingExpenseId(expense.id);
+    setIsFormOpen(true);
+  }
+
+  function handleFormOpenChange(open: boolean): void {
+    setIsFormOpen(open);
+    if (!open) {
+      setEditingExpenseId(null);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -68,53 +88,43 @@ export function ExpenseSection({
         </div>
       ) : null}
       {showList ? (
-        <ExpenseList
-          expenses={expenses}
-          canEdit={canEdit}
-          onEdit={(expense) => setEditingExpenseId(expense.id)}
-        />
-      ) : null}
-      {showList ? (
-        canEdit && editingExpense ? (
-          <div className="flex flex-col gap-3">
-            <h2 className="text-base font-medium">Editar gasto</h2>
-            <ExpenseForm
-              mode="edit"
+        <>
+          {canCreateExpenses ? (
+            <Button
+              type="button"
+              className="min-h-11 w-full sm:w-auto"
+              onClick={openCreateForm}
+            >
+              <PlusIcon />
+              Agregar gasto
+            </Button>
+          ) : canEdit ? (
+            <p className="text-sm text-muted-foreground">
+              Agrega al menos {MIN_MEMBERS_TO_CREATE_EXPENSE} integrantes para
+              registrar gastos.
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Los gastos se consultan aquí. Solo se pueden crear o editar cuando
+              el plan está activo.
+            </p>
+          )}
+          <ExpenseList
+            expenses={expenses}
+            canEdit={canEdit}
+            onEdit={openEditForm}
+          />
+          {canEdit ? (
+            <ExpenseFormSheet
+              open={isFormOpen}
+              onOpenChange={handleFormOpenChange}
               planId={planId}
-              expenseId={editingExpense.id}
               members={members}
               sessionMemberId={sessionMemberId}
-              defaultValues={{
-                title: editingExpense.title,
-                amount: editingExpense.amount.toFixed(2),
-                category: editingExpense.category,
-                paidByMemberId: editingExpense.paidByMemberId,
-                shareMemberIds: editingExpense.shareMemberIds,
-              }}
-              onCancel={() => setEditingExpenseId(null)}
+              expense={editingExpense}
             />
-          </div>
-        ) : canCreateExpenses ? (
-          <div className="flex flex-col gap-3">
-            <h2 className="text-base font-medium">Nuevo gasto</h2>
-            <ExpenseForm
-              mode="create"
-              planId={planId}
-              members={members}
-              sessionMemberId={sessionMemberId}
-            />
-          </div>
-        ) : canEdit ? (
-          <p className="text-sm text-muted-foreground">
-            Agrega al menos {MIN_MEMBERS_TO_CREATE_EXPENSE} integrantes para
-            registrar gastos.
-          </p>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            Los gastos se consultan aquí. Solo se pueden crear o editar cuando
-            el plan está activo.
-          </p>
-        )
+          ) : null}
+        </>
       ) : null}
     </div>
   );

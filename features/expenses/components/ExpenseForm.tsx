@@ -47,22 +47,23 @@ export interface IExpenseFormValues {
   shareMemberIds: string[];
 }
 
+type TExpenseFormBaseProps = {
+  planId: string;
+  members: IExpenseMemberOption[];
+  sessionMemberId: string;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+};
+
 type TExpenseFormProps =
-  | {
+  | (TExpenseFormBaseProps & {
       mode: "create";
-      planId: string;
-      members: IExpenseMemberOption[];
-      sessionMemberId: string;
-    }
-  | {
+    })
+  | (TExpenseFormBaseProps & {
       mode: "edit";
-      planId: string;
       expenseId: string;
-      members: IExpenseMemberOption[];
-      sessionMemberId: string;
       defaultValues: IExpenseFormValues;
-      onCancel: () => void;
-    };
+    });
 
 function buildCreateDefaults(
   members: IExpenseMemberOption[],
@@ -116,14 +117,15 @@ export function ExpenseForm(props: TExpenseFormProps): ReactElement {
     }
 
     if (result.success) {
-      toast.success(props.mode === "create" ? "Gasto registrado" : "Gasto actualizado");
+      toast.success(
+        props.mode === "create" ? "Gasto registrado" : "Gasto actualizado",
+      );
 
       if (props.mode === "create") {
         form.reset(buildCreateDefaults(props.members, props.sessionMemberId));
-        return;
       }
 
-      props.onCancel();
+      props.onSuccess?.();
     }
   }
 
@@ -305,7 +307,7 @@ export function ExpenseForm(props: TExpenseFormProps): ReactElement {
                 ? "Guardar gasto"
                 : "Registrar gasto"}
           </Button>
-          {props.mode === "edit" ? (
+          {props.onCancel ? (
             <Button
               type="button"
               variant="outline"

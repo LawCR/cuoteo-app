@@ -10,8 +10,7 @@ import { listExpensesForPlan } from "@/features/expenses/services/server/expense
 import { SendFriendRequestButton } from "@/features/friends/components/SendFriendRequestButton";
 import { listFriendRequests } from "@/features/friends/services/server/friend-request-service.server";
 import { listFriends } from "@/features/friends/services/server/friendship-service.server";
-import { AddFriendToPlanForm } from "@/features/plans/components/AddFriendToPlanForm";
-import { AddGhostToPlanForm } from "@/features/plans/components/AddGhostToPlanForm";
+import { AddPlanMemberSheet } from "@/features/plans/components/AddPlanMemberSheet";
 import { LeavePlanButton } from "@/features/plans/components/LeavePlanButton";
 import { MovePlanToActiveButton } from "@/features/plans/components/MovePlanToActiveButton";
 import { MovePlanToBalanceButton } from "@/features/plans/components/MovePlanToBalanceButton";
@@ -389,30 +388,12 @@ export default async function PlanDetailPage({
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
-          <PlanMemberList
-            members={plan.members}
-            creatorUserId={plan.creatorUserId}
-            memberActions={memberActions}
-            memberMeta={memberMeta}
-          />
           {canEdit ? (
-            <>
-              <div className="flex flex-col gap-3">
-                <h2 className="text-base font-medium">Agregar amigo</h2>
-                <AddFriendToPlanForm
-                  planId={plan.id}
-                  friends={eligibleFriends}
-                  hasExpenses={expenses.length > 0}
-                />
-              </div>
-              <div className="flex flex-col gap-3">
-                <h2 className="text-base font-medium">Agregar invitado</h2>
-                <AddGhostToPlanForm
-                  planId={plan.id}
-                  hasExpenses={expenses.length > 0}
-                />
-              </div>
-            </>
+            <AddPlanMemberSheet
+              planId={plan.id}
+              friends={eligibleFriends}
+              hasExpenses={expenses.length > 0}
+            />
           ) : (
             <p className="text-sm text-muted-foreground">
               {isCompleted
@@ -420,6 +401,12 @@ export default async function PlanDetailPage({
                 : "Los integrantes se pueden cambiar solo cuando el plan está activo."}
             </p>
           )}
+          <PlanMemberList
+            members={plan.members}
+            creatorUserId={plan.creatorUserId}
+            memberActions={memberActions}
+            memberMeta={memberMeta}
+          />
         </CardContent>
       </Card>
 
